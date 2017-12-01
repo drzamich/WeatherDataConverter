@@ -1,4 +1,5 @@
 import os
+import math
 
 
 class Station:
@@ -157,4 +158,16 @@ def yearappropriatelist(year, list):
 year = 2016
 yearlist = yearappropriatelist(year, fulllist)
 
-print(yearlist[0])
+def gpsdistance(lon1,lat1,lon2,lat2):
+    R = 6371000
+    lon1 = math.radians(lon1)
+    lon2 = math.radians(lon2)
+
+    dlon = abs(lon1-lon2)
+    dlat = abs(lat1-lat2)
+    dlat = math.radians(dlat)
+
+    a = (math.sin(0.5 * dlat)) ** 2 + math.cos(lat1) * math.cos(lat2) * (math.sin(0.5 * dlon)) ** 2
+    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+
+    return R*c
