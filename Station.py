@@ -1,53 +1,11 @@
 import os
 import math
-
-
-class Station:
-    def __init__(
-            self,
-            stationID,
-            stationElevation,
-            stationLatitude,
-            stationLongitude,
-            stationName,
-            stationState):
-        self.stationID = stationID
-        self.stationElevation = stationElevation
-        self.stationLatitude = stationLatitude
-        self.stationLongitude = stationLongitude
-        self.stationName = stationName
-        self.stationState = stationState
-
-        # setting the default start and ending dates of specific observations
-        # they are set to high (low) number by default
-        self.startingDates = []
-        self.endingDates = []
-
-        for i in range(0, 8):
-            self.startingDates.append(99999999)
-            self.endingDates.append(0)
-
-
-observedCharacteristics = [
-    ['air_temperature', 'TU'],
-    ['cloudiness', 'N'],
-    ['precipitation', 'RR'],
-    ['pressure', 'P0'],
-    ['soil_temperature', 'EB'],
-    ['solar', 'ST'],
-    ['sun', 'SD'],
-    ['wind', 'FF']
-]
-
-observations_number = len(observedCharacteristics)
-
-use_recent_data = 0
+from Settings import *
 
 def createstationlist():
     stations_big_list = []
 
     # dirpath = os.path.abspath(os.curdir)
-    dirpath = 'E:\\DOKUMENTY\\WeatherData\\'
 
     for characteristics in observedCharacteristics:
         # Absolute path to the file with station list
@@ -89,7 +47,7 @@ def createstationlist():
         stations_small_list = []
 
         historical_list_pointer = 0
-        # Skipping first two lines not consistin gof station data
+        # Skipping first two lines not consist of station data
         # Going over every line in the file
         for i in range(2, len(whole_file)):
             splitted = whole_file[i].split()  # splitting the single line of the list
@@ -126,15 +84,15 @@ def createstationlist():
             if splitted[0] in idlist_recent:
                 splitted[10] = 1
 
-            stations_small_list.append(splitted)
+            #if the station does not exists in the weather data, it wont be added to the list
+            if(splitted[8] != 0):
+                stations_small_list.append(splitted)
 
         stations_big_list.append(stations_small_list)
 
 
     return stations_big_list
 
-
-fulllist = createstationlist()
 
 # Function that creates appropriate list depending on the choosen year
 def yearappropriatelist(year, list):
@@ -155,19 +113,33 @@ def yearappropriatelist(year, list):
     return newlist
 
 
-year = 2016
-yearlist = yearappropriatelist(year, fulllist)
-
-def gpsdistance(lon1,lat1,lon2,lat2):
+def gpsdistance(lat1,lon1,lat2,lon2):
     R = 6371000
-    lon1 = math.radians(lon1)
-    lon2 = math.radians(lon2)
+    lat1 = math.radians(lat1)
+    lat2 = math.radians(lat2)
 
-    dlon = abs(lon1-lon2)
     dlat = abs(lat1-lat2)
-    dlat = math.radians(dlat)
+    dlon = abs(lon1-lon2)
+    dlon = math.radians(dlon)
 
     a = (math.sin(0.5 * dlat)) ** 2 + math.cos(lat1) * math.cos(lat2) * (math.sin(0.5 * dlon)) ** 2
     c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
 
     return R*c
+
+def getbeststations(lat,lon,year):
+    list = createstationlist()
+    yearlist = yearappropriatelist(year,list)
+    beststations = []
+    for list in yearlist:
+        distancemax = 99999999999
+        beststation = []
+        for station in list:
+            distance =  gpsdistance(lat,lon,float(station[4]),float(station[5]))
+            if distance < distancemax:
+                distancemax = distance
+                beststation = station
+        beststations.append(beststation)
+    return beststations
+
+
