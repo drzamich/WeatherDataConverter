@@ -14,3 +14,4 @@ observedCharacteristics = [
 observations_number = len(observedCharacteristics)
 
 dirpath = 'E:\\DOKUMENTY\\WeatherData\\'
+dirpath_ftp = '/pub/CDC/observations_germany/climate/hourly/'
