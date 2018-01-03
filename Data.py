@@ -95,6 +95,7 @@ def interpolate_data_list(data_list, columns):
                         new_entry.append(new_values[i][x-1])
 
                     data_list.insert((index-1)+x,new_entry)
-                    save_list_to_file(data_list,'lala.txt')
-                    print(missing_list)
-                    return data_list, missing_list
+
+    save_list_to_file(data_list,'lala.txt')
+    print(missing_list)
+    return data_list, missing_list
