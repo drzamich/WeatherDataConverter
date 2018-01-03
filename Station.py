@@ -1,6 +1,7 @@
 import os
 import math
 from Settings import *
+from prettytable import PrettyTable
 
 def createstationlist():
     stations_big_list = []
@@ -140,6 +141,13 @@ def getbeststations(lat,lon,year):
                 distancemax = distance
                 beststation = station
         beststations.append(beststation)
-    return beststations
 
+    for x in range(0,len(observedCharacteristics)):
+        beststations[x].insert(0,observedCharacteristics[x][0])
 
+    t = PrettyTable(['Char','ID','DateStart','DateEnd','Elev.','Lat.','Lon.','City','Bundesland','in_hist','end_hist','in_recent'])
+
+    for x in range(0,len(observedCharacteristics)):
+        t.add_row(beststations[x])
+
+    return beststations, t
