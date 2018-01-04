@@ -12,13 +12,13 @@ def createstationlist():
         # Absolute path to the file with station list
         # Solar data are not separated in recent and historical - therefore the if clause
         if (characteristics[0] != 'solar'):
-            folderpath_historical = dirpath + characteristics[0] + '\\historical\\'
-            folderpath_recent = dirpath + characteristics[0] + '\\recent\\'
-            filepath = dirpath + characteristics[0] + '\\historical\\' \
+            folderpath_historical = dirpath_offline + characteristics[0] + '\\historical\\'
+            folderpath_recent = dirpath_offline + characteristics[0] + '\\recent\\'
+            filepath = dirpath_offline + characteristics[0] + '\\historical\\' \
                        + characteristics[1] + '_Stundenwerte_Beschreibung_Stationen.txt'
         else:
-            folderpath_recent = dirpath + characteristics[0]
-            filepath = dirpath + characteristics[0] + '\\' \
+            folderpath_recent = dirpath_offline + characteristics[0]
+            filepath = dirpath_offline + characteristics[0] + '\\' \
                        + characteristics[1] + '_Stundenwerte_Beschreibung_Stationen.txt'
 
         # creating list of files in the folder to extract the ending date of "historical" weather data which is "hidden"
