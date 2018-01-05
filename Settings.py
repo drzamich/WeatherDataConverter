@@ -1,5 +1,5 @@
 use_recent_data= 0
-use_offline_data = 1
+use_offline_data = 0
 
 observedCharacteristics = [
     ['air_temperature', 'TU',[3,4]],
@@ -17,4 +17,5 @@ observations_number = len(observedCharacteristics)
 
 dirpath_offline = 'E:\\DOKUMENTY\\WeatherData\\'
 dirpath_ftp = '/pub/CDC/observations_germany/climate/hourly/'
+dirpath_downloaded = 'data/download/'
 

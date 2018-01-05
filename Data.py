@@ -2,20 +2,25 @@ from Settings import *
 from datetime import datetime, timedelta
 import zipfile
 from Helping import *
-import os
 import ftplib
 import math
+import os
+from pathlib import Path
 
 def create_weather_set(station_list,year):
     generate_raw_data(station_list,year)
 
 def generate_raw_data(station_list,year):
+    if not use_offline_data:
+        download_data_from_server(station_list)
+
     for index,char in enumerate(observedCharacteristics):
 
         char_name = observedCharacteristics[index][0]
-        important_columns = observedCharacteristics[index][2]
         raw_data_list = get_data_from_file(index,station_list[index][1],year)
         interpolated_data_list, missing_list = interpolate_data_list(raw_data_list,index)
+
+
         save_list_to_file(interpolated_data_list,'data/'+char_name+'.txt')
 
         report_text = ('Succesfully extracted and interpolated data for '+char_name+'\n'
@@ -85,45 +90,35 @@ def interpolate_data_list(data_list,char_num):
     return data_list, missing_list
 
 
-def get_data_from_file(char_num, station_id, year):
+def download_data_from_server(station_list):
 
-#Function that, based on the characteristic number and station id, finds on the FTP server
-#The proper zip file with weather data, downloads and opens it, opens the data file and extracts from it the data
-#For the given year
-    char_name = observedCharacteristics[char_num][0]
-    char_short = observedCharacteristics[char_num][1]
+# This function downloads data from server in one go based on the staions IDs
+# It only needs to connect to the server once, therefore it limits queries send to server that may leed to issues
+# Like blocking the user
 
-    #Defining the begining of the file name and the directory on the server based on the station ID
+    # Connecting to the server
+    try:
+        ftp = ftplib.FTP('ftp-cdc.dwd.de')
+        ftp.login(user='anonymous', passwd='')
+    except Exception:
+        print('Unable to connect to FTP server')
 
-    filename_begin = 'stundenwerte_' + char_short.upper() + '_' + station_id
+    for index,char in enumerate(observedCharacteristics):
 
-    if char_num!=5:
-        path = dirpath_ftp + char_name + '/historical/'
-    else:
-        path = dirpath_ftp + char_name
+        char_name = char[0]
+        char_short = char[1]
 
-    if use_offline_data:
-        #use offline data
-        if char_num != 5:
-            path = dirpath_offline + char_name + '//historical//'
-        else:
-            path = dirpath_ftp + char_name
-
-    else:   #using data from FTP server
-        if char_num != 5:
+        if index != 5:
             path = dirpath_ftp + char_name + '/historical/'
         else:
             path = dirpath_ftp + char_name
-        #Connecting to the server
-        try:
-            ftp = ftplib.FTP('ftp-cdc.dwd.de')
-            ftp.login(user='anonymous',passwd='')
-        except Exception:
-            print('Unable to connect to FTP server')
 
         ftp.cwd(path) #changing the directory
         ls = []
         ftp.retrlines('MLSD',ls.append)  #listing files in the directory
+
+        station_id = station_list[index][1]
+        filename_begin = 'stundenwerte_' + char_short.upper() + '_' + station_id
 
         #looking for the file that's name begins with our defined string
         for line in ls:
@@ -131,40 +126,77 @@ def get_data_from_file(char_num, station_id, year):
             for line_inner in line_splitted:
                 if str(line_inner).strip().startswith(filename_begin):
                     filename = str(line_inner).strip()
-        #downloading the zip
-        file = open('data/'+filename, 'wb')
-        try:
-            ftp.retrbinary('RETR %s' % filename, file.write)
-        except Exception:
-            print('Unable to download file from FTP server')
 
-        file.close()
+        #checking if our file already exists in the download folder
+        filepath = dirpath_downloaded + '/' + char_name + '/' + filename
+        if Path(filepath).is_file():
+            continue
 
-        ftp.quit()
+        #If the file does not exist, download process proceeds
+        else:
+            file = open(filepath, 'wb')
+            try:
+                ftp.retrbinary('RETR %s' % filename, file.write)
+            except Exception:
+                print('Unable to download file from FTP server')
 
-    #opening the zip file
-    zf = zipfile.ZipFile('data/'+filename)
+            file.close()
 
-    list = zf.namelist()
+    ftp.quit()
 
-    for item in list:
+
+def get_data_from_file(char_num, station_id, year):
+
+#Function that, based on the characteristic number and station id, finds on the FTP server
+#The proper zip file with weather data, downloads and opens it, opens the data file and extracts from it the data
+#For the given year
+
+    char_name = observedCharacteristics[char_num][0]
+    char_short = observedCharacteristics[char_num][1]
+
+    #Defining the begining of the file name and the directory on the server based on the station ID
+
+    filename_begin = 'stundenwerte_' + char_short.upper() + '_' + station_id
+
+    if use_offline_data:
+        #use offline data
+        if char_num != 5:  #not solar data
+            path = dirpath_offline + char_name + '//historical//'
+        else:               #solar data
+            path = dirpath_offline + char_name+'/'
+
+    else:
+        path = dirpath_downloaded + char_name+'/'
+
+    dir_list = os.listdir(path)
+
+    for item in dir_list:
+        if str(item).startswith(filename_begin):
+            filename = str(item)
+
+    zf = zipfile.ZipFile(path+filename)
+
+    inside_zip = zf.namelist()
+
+    #looking for txt file with the name produkt*
+    for item in inside_zip:
         if str(item).startswith('produkt'):
             file_data_name = str(item)
 
     file_data = zf.open(file_data_name)
 
-    list = file_data.readlines()
+    file_data_as_list = file_data.readlines()
     file_data.close()
-    year_list = extract_appropriate_year(list,year,char_num)
+    file_data_year_list = extract_appropriate_year(file_data_as_list,year,char_num)
 
-    # removing the zip file
     zf.close()
-    os.remove('data/'+filename)
 
-    return year_list
+    return file_data_year_list
 
-#Function that when given a list resulting from data file, returns a list with data corresponding with the given year
+
 def extract_appropriate_year(list,year,char_num):
+# Function that when given a list resulting from data file, returns a list with data corresponding with the given year
+
     temp_list = []
     for line in list:
         #splitting each line of the file where the semicolon is. also decoding the file from bytes to utf8 format
