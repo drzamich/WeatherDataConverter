@@ -7,7 +7,7 @@ def save_list_to_file(list,filename):
         file.write(str(entry)+'\n')
     file.close
 
-def generate_report(mode = None,text=None, missing_values_list = None):
+def generate_report(mode = None, text=None, missing_values_list = None, intepolated_data_list = None):
     dirpath = 'reports/'+current_date+'/'
     if not os.path.isdir(dirpath):
         os.mkdir(dirpath)
@@ -27,3 +27,11 @@ def generate_report(mode = None,text=None, missing_values_list = None):
             for item in list:
                 f.write(str(item)+'\n')
             f.write('\n')
+
+    elif mode == 3: #saving interpolated data to files
+        for index,char in enumerate(observedCharacteristics):
+            filepath = dirpath + char[0]+'.txt'
+            f = open(filepath,'a')
+            for entry in intepolated_data_list[index]:
+                f.write(str(entry)+'\n')
+            f.close()

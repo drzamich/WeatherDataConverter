@@ -14,15 +14,17 @@ def generate_raw_data(station_list,year):
         download_data_from_server(station_list)
 
     missing_values_list = []
+    interpolated_data_list = []
+
     for index,char in enumerate(observedCharacteristics):
 
         char_name = observedCharacteristics[index][0]
+
         raw_data_list = get_data_from_file(index,station_list[index][1],year)
-        interpolated_data_list, missing_values_entry = interpolate_data_list(raw_data_list,index)
+        interpolated_data_list_entry, missing_values_entry = interpolate_data_list(raw_data_list,index)
 
         missing_values_list.append(missing_values_entry)
-
-        save_list_to_file(interpolated_data_list,'data/'+char_name+'.txt')
+        interpolated_data_list.append(interpolated_data_list_entry)
 
         report_text = ('\nSuccesfully extracted and interpolated data for '+char_name+'\n'
         +'There were %s periods with missing values \n' %len(missing_values_entry) )
@@ -30,6 +32,7 @@ def generate_raw_data(station_list,year):
         generate_report(mode=1,text=report_text)
 
     generate_report(mode=2,missing_values_list=missing_values_list)
+    generate_report(mode=3, intepolated_data_list=interpolated_data_list)
 
 #Function that searches the given data list for missing hours
 #Then it interpolates the values based on the records neighbouting to missing values and inserts them in the middle
@@ -38,16 +41,27 @@ def generate_raw_data(station_list,year):
 
 def interpolate_data_list(data_list,char_num):
     missing_list = []
+    fmt = '%Y%m%d%H'  # format of the timestamp
+
     for index,entry in enumerate(data_list):
-        if(index!=0):
+
+        if index == 0:
+
+            if not data_list[0][0].endswith('010100'):
+                year = data_list[0][0][0:4]
+                new_start = [year+'010100']
+                for index,item in enumerate(data_list[0]):
+                    if index!=0:
+                        new_start.append(item)
+                data_list.insert(0,new_start)
+
+        if index!=0:
             #to check if any values are missing, the time difference between two entries is calculated
             #if the time fidderence in hours is bigger than 1, that means there is a missing value
 
             #putting the date togehter out of the data in the list
             date1 = data_list[index-1][0]
             date2 = data_list[index][0]
-
-            fmt = '%Y%m%d%H' #format of the timestamp
             tstamp1 = datetime.strptime(date1,fmt)
             tstamp2 = datetime.strptime(date2,fmt)
 
