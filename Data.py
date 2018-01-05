@@ -1,11 +1,10 @@
-from Settings import *
-from datetime import datetime, timedelta
 import zipfile
 from Helping import *
 import ftplib
 import math
 import os
 from pathlib import Path
+from datetime import *
 
 def create_weather_set(station_list,year):
     generate_raw_data(station_list,year)
@@ -14,19 +13,23 @@ def generate_raw_data(station_list,year):
     if not use_offline_data:
         download_data_from_server(station_list)
 
+    missing_values_list = []
     for index,char in enumerate(observedCharacteristics):
 
         char_name = observedCharacteristics[index][0]
         raw_data_list = get_data_from_file(index,station_list[index][1],year)
-        interpolated_data_list, missing_list = interpolate_data_list(raw_data_list,index)
+        interpolated_data_list, missing_values_entry = interpolate_data_list(raw_data_list,index)
 
+        missing_values_list.append(missing_values_entry)
 
         save_list_to_file(interpolated_data_list,'data/'+char_name+'.txt')
 
-        report_text = ('Succesfully extracted and interpolated data for '+char_name+'\n'
-        +'There were %s periods with missing values \n' %len(missing_list) )
+        report_text = ('\nSuccesfully extracted and interpolated data for '+char_name+'\n'
+        +'There were %s periods with missing values \n' %len(missing_values_entry) )
 
-        generate_report(2,report_text)
+        generate_report(mode=1,text=report_text)
+
+    generate_report(mode=2,missing_values_list=missing_values_list)
 
 #Function that searches the given data list for missing hours
 #Then it interpolates the values based on the records neighbouting to missing values and inserts them in the middle
@@ -85,8 +88,6 @@ def interpolate_data_list(data_list,char_num):
 
                     data_list.insert((index-1)+x,new_entry)
 
-    save_list_to_file(data_list,'lala.txt')
-    print(missing_list)
     return data_list, missing_list
 
 

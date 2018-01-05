@@ -17,8 +17,8 @@ if __name__=="__main__":
     +'Lognitude: %s \n\n'%str(lon)
     +'List of most favourable weather stations: \n'
                     )
-    generate_report(2,report_text)
-    generate_report(2,str(stations_table))
+    generate_report(mode=1,text=report_text)
+    generate_report(mode=1,text=str(stations_table))
     weather_data = create_weather_set(station_list,year)
     # print(station_list)
 
