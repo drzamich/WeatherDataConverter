@@ -7,7 +7,6 @@ from datetime import datetime
 
 
 if __name__=="__main__":
-    generate_report(1)
     station_list, stations_table = getbeststations(lat,lon,year)
 
     report_text = ('Data extraction executed at %s \n' % str(datetime.now())

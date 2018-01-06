@@ -31,5 +31,7 @@ current_date = datetime.datetime.now()
 
 current_date = current_date.strftime('%Y%m%d - %H%M%S')
 
+fmt = '%Y%m%d%H'  # format of the timestamp
+
 
 

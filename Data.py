@@ -44,16 +44,17 @@ def generate_raw_data(station_list,year):
     generate_report(mode=2,missing_values_list=missing_values_list)
     generate_report(mode=3, intepolated_data_list=interpolated_data_list)
     interpolated_data_list = combine_lists(interpolated_data_list)
+
+    interpolated_data_list = strip_leap_year(interpolated_data_list)
     save_list_to_file(interpolated_data_list,'whole.txt')
+
 
 #Function that searches the given data list for missing hours
 #Then it interpolates the values based on the records neighbouting to missing values and inserts them in the middle
 #of the list
-#Interpolated values are stored in the "columns"
 
 def interpolate_data_list(data_list,char_num):
     missing_list = []
-    fmt = '%Y%m%d%H'  # format of the timestamp
 
     for index,entry in enumerate(data_list):
 
@@ -293,7 +294,6 @@ def delete_duplitates(data_list):
 def combine_lists(data_list):
     num_of_lists = len(data_list)
     list_size = len(data_list[0])
-    print(num_of_lists)
     combined_list = []
     for i in range (0,num_of_lists):
         if i == 0:
@@ -306,3 +306,22 @@ def combine_lists(data_list):
                     combined_list[j].append(new_entry[k])
 
     return combined_list
+
+def strip_leap_year(data_list):
+
+    #changing the date of each record after 28th Feb 23:00 by adding one day
+    boundary_date = str(year)+'022823'
+    for item in data_list:
+        date = item[0]
+        tstamp1 = datetime.strptime(date,fmt)
+        tstamp2 = datetime.strptime(boundary_date,fmt)
+        if tstamp1 > tstamp2:
+            tstamp3 = tstamp1 + timedelta(days=1)
+            date_new = datetime.strftime(tstamp3,fmt)
+            item[0] = date_new
+
+    #removing last 24 entires on the data_list
+    for i in range(0,24):
+        data_list.pop()
+
+    return data_list
