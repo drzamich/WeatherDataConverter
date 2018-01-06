@@ -10,6 +10,7 @@ def create_weather_set(station_list,year):
     generate_raw_data(station_list,year)
 
 def generate_raw_data(station_list,year):
+
     if not use_offline_data:
         download_data_from_server(station_list)
 
@@ -83,11 +84,22 @@ def interpolate_data_list(data_list,char_num):
                     value1 = float(data_list[index-1][i])
                     value2 = float(data_list[index][i])
                     incr = (value2 - value1)/td_hours
+
                     for x in range(1,int(td_hours)):
+                        if value1 == -999.0 and value2 == -999.0:
+                            new_val = -999.0
+                        elif value1 == -999.0 and value2 != -999.0:
+                            new_val = value2
+                        elif value1 != -999.0 and value2 == -999.0:
+                            new_val = value1
+                        elif value1 != -999.0 and value2 != -999.0:
+                            new_val = value1+x*incr
+
                         if char_num==1:                                      #special case for interpolation of clouds
-                            new_values_entry.append(math.ceil(value1+x*incr)) #the cloud cover has to be a  whole number
+                            new_values_entry.append(math.ceil(new_val)) #the cloud cover has to be a  whole number
                         else:
-                            new_values_entry.append(value1+x*incr)
+                            new_values_entry.append(new_val)
+
                     new_values.append(new_values_entry)
 
                 #inserting calculated values to the original list
@@ -123,8 +135,6 @@ def interpolate_data_list(data_list,char_num):
                     data_list.insert(len(data_list)+1,new_element)
                     a +=1
                     if newdate.endswith('123123'): break
-
-
 
     return data_list, missing_list
 
@@ -222,10 +232,10 @@ def get_data_from_file(char_num, station_id, year):
         if str(item).startswith('produkt'):
             file_data_name = str(item)
 
-    file_data = zf.open(file_data_name)
-
     if testing_mode:
-        file
+        file_data = open('data/testing/'+char_name+'.txt','r')
+    else:
+        file_data = zf.open(file_data_name)
 
     file_data_as_list = file_data.readlines()
     file_data.close()
@@ -242,7 +252,11 @@ def extract_appropriate_year(list,year,char_num):
     temp_list = []
     for line in list:
         #splitting each line of the file where the semicolon is. also decoding the file from bytes to utf8 format
-        line_splitted = line.decode('utf8').split(";")
+        #for some reason it is only necessary when the text file is loaded from the zip file
+        if not testing_mode:  #in the testing mode I use pure txt files (not packed in zip) - no decoding needed
+            line_splitted = line.decode('utf8').split(";")
+        else:
+            line_splitted = line.split(";")
         date = line_splitted[1]
         temp_list_entry = []
         if (date.startswith(str(year))):

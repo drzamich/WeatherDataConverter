@@ -2,7 +2,7 @@ from Station import *
 from Data import *
 from datetime import datetime
 
-year = 2015
+year = 2016
 lat = 52.93
 lon = 8.23
 
