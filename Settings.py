@@ -12,14 +12,14 @@ use_offline_data = 1
 testing_mode = 1
 
 observedCharacteristics = [
-    ['air_temperature', 'TU',[3,4]],
-    ['cloudiness', 'N',[4]],
-    ['precipitation', 'RR',[3]],
-    ['pressure', 'P0',[3,4]],
-    ['soil_temperature', 'EB',[3,4,5,6,7,8]],
-    ['solar', 'ST',[3,4,5,6,7]],
-    ['sun', 'SD',[3]],
-    ['wind', 'FF',[3,4]]
+    ['air_temperature', 'TU',[3,4]],                #0
+    ['cloudiness', 'N',[4]],                        #1
+    ['precipitation', 'RR',[3]],                    #2
+    ['pressure', 'P0',[3,4]],                       #3
+    ['soil_temperature', 'EB',[3,4,5,6,7,8]],       #4
+    ['solar', 'ST',[3,4,5,6,7]],                    #5
+    ['sun', 'SD',[3]],                              #6
+    ['wind', 'FF',[3,4]]                            #7
 ]
 observations_number = len(observedCharacteristics)
 

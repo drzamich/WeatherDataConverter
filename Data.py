@@ -5,6 +5,7 @@ import math
 import os
 from pathlib import Path
 from datetime import *
+import Irradiance
 
 def create_weather_set(station_list,year):
     generate_raw_data(station_list,year)
@@ -325,3 +326,27 @@ def strip_leap_year(data_list):
         data_list.pop()
 
     return data_list
+
+def prepare_data(data_list,char_num):
+    if char_num == 5: #solar
+
+
+        for index,item in enumerate(data_list):
+            # Calculating the global and diffuse horizontal radiation values in W/m2
+            diff_hour = float(item[2])   # J/cm^2*h
+            diff_instant = (10000.0/3600.0)*diff_hour  #W/m2
+
+            glob_hour = float(item[3])    # J/cm^2*h
+            glob_instant = (10000.0/3600.0)*glob_hour  #W/m2
+
+            item.append(diff_instant)   #item[6]
+            item.append(glob_instant)   #item[7]
+
+            #Calculating the direct normal radiation
+            day_of_year = math.ceil(index+1/24.0)
+            zenith = float(item[5])
+
+            dir_nor = Irradiance.disc(glob_instant,zenith,day_of_year)
+            print(dir_nor)
+
+
