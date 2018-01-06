@@ -2,6 +2,7 @@ import datetime
 
 use_recent_data= 0
 use_offline_data = 1
+testing_mode = 0
 
 observedCharacteristics = [
     ['air_temperature', 'TU',[3,4]],
@@ -13,7 +14,6 @@ observedCharacteristics = [
     ['sun', 'SD',[3]],
     ['wind', 'FF',[3,4]]
 ]
-
 observations_number = len(observedCharacteristics)
 
 dirpath_offline = 'E:\\DOKUMENTY\\WeatherData\\'

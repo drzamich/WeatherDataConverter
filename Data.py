@@ -48,6 +48,9 @@ def interpolate_data_list(data_list,char_num):
         if index == 0:
 
             if not data_list[0][0].endswith('010100'):
+                missing_list.append('before')
+                missing_list.append(data_list[0][0])
+
                 year = data_list[0][0][0:4]
                 new_start = [year+'010100']
                 for index,item in enumerate(data_list[0]):
@@ -55,7 +58,9 @@ def interpolate_data_list(data_list,char_num):
                         new_start.append(item)
                 data_list.insert(0,new_start)
 
-        if index!=0:
+
+
+        elif index!=0:
             #to check if any values are missing, the time difference between two entries is calculated
             #if the time fidderence in hours is bigger than 1, that means there is a missing value
 
@@ -101,6 +106,25 @@ def interpolate_data_list(data_list,char_num):
                         new_entry.append(new_values[i][x-1])
 
                     data_list.insert((index-1)+x,new_entry)
+
+        if index==len(data_list)-1:
+            last_date = data_list[len(data_list)-1][0]
+            if not str(last_date).endswith('123123'):
+                missing_list.append('after:')
+                missing_list.append(last_date)
+                tstamp1 = datetime.strptime(last_date, fmt)
+                tstamp_new = tstamp1
+                while True:
+                    new_element = data_list[len(data_list)-1].copy()
+                    a=1
+                    tstamp_new = tstamp_new+timedelta(hours=a)
+                    newdate = datetime.strftime(tstamp_new,fmt)
+                    new_element[0] = newdate
+                    data_list.insert(len(data_list)+1,new_element)
+                    a +=1
+                    if newdate.endswith('123123'): break
+
+
 
     return data_list, missing_list
 
@@ -199,6 +223,9 @@ def get_data_from_file(char_num, station_id, year):
             file_data_name = str(item)
 
     file_data = zf.open(file_data_name)
+
+    if testing_mode:
+        file
 
     file_data_as_list = file_data.readlines()
     file_data.close()

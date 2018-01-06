@@ -14,13 +14,13 @@ def generate_report(mode = None, text=None, missing_values_list = None, intepola
 
     if mode == 1 and text is not None:  # adding text to the report file
 
-        f = open(dirpath+'report.txt','a')
+        f = open(dirpath+'00_report.txt','a')
         f.write(text)
         f.close
 
     elif mode == 2: #adding entries to the missing_values file
 
-        f = open(dirpath+'MV.txt','a')
+        f = open(dirpath+'00_missing_values.txt','a')
 
         for index,list in enumerate(missing_values_list):
             f.write(observedCharacteristics[index][0]+observedCharacteristics[index][1]+'\n')
