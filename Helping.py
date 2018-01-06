@@ -35,3 +35,11 @@ def generate_report(mode = None, text=None, missing_values_list = None, intepola
             for entry in intepolated_data_list[index]:
                 f.write(str(entry)+'\n')
             f.close()
+
+def is_leap_year(year):
+    if year % 4 == 0:
+        return 1
+    else:
+        return 0
+
+leap_year = is_leap_year(year)

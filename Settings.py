@@ -1,4 +1,11 @@
 import datetime
+from Helping import *
+
+
+year = 2016
+lat = 52.93
+lon = 8.23
+
 
 use_recent_data= 0
 use_offline_data = 1
@@ -23,3 +30,6 @@ dirpath_downloaded = 'data/download/'
 current_date = datetime.datetime.now()
 
 current_date = current_date.strftime('%Y%m%d - %H%M%S')
+
+
+

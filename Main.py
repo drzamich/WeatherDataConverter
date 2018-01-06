@@ -1,10 +1,9 @@
+from Helping import *
+from Settings import *
 from Station import *
 from Data import *
 from datetime import datetime
 
-year = 2016
-lat = 52.93
-lon = 8.23
 
 
 if __name__=="__main__":

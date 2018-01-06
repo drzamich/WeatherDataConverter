@@ -16,16 +16,25 @@ def generate_raw_data(station_list,year):
 
     missing_values_list = []
     interpolated_data_list = []
+    whole_list = []
+
 
     for index,char in enumerate(observedCharacteristics):
 
         char_name = observedCharacteristics[index][0]
-
         raw_data_list = get_data_from_file(index,station_list[index][1],year)
         interpolated_data_list_entry, missing_values_entry = interpolate_data_list(raw_data_list,index)
+        interpolated_data_list_entry = delete_duplitates(interpolated_data_list_entry)
 
-        missing_values_list.append(missing_values_entry)
+        if not leap_year:
+            if len(interpolated_data_list_entry) != 8760:
+                print ("Wrong lenght of data list for "+ char_name)
+        else:
+            if len(interpolated_data_list_entry) != 8784:
+                print ("Wrong lenght of data list for "+ char_name)
+
         interpolated_data_list.append(interpolated_data_list_entry)
+        missing_values_list.append(missing_values_entry)
 
         report_text = ('\nSuccesfully extracted and interpolated data for '+char_name+'\n'
         +'There were %s periods with missing values \n' %len(missing_values_entry) )
@@ -34,6 +43,8 @@ def generate_raw_data(station_list,year):
 
     generate_report(mode=2,missing_values_list=missing_values_list)
     generate_report(mode=3, intepolated_data_list=interpolated_data_list)
+    interpolated_data_list = combine_lists(interpolated_data_list)
+    save_list_to_file(interpolated_data_list,'whole.txt')
 
 #Function that searches the given data list for missing hours
 #Then it interpolates the values based on the records neighbouting to missing values and inserts them in the middle
@@ -266,3 +277,32 @@ def extract_appropriate_year(list,year,char_num):
 
             temp_list.append(temp_list_entry)
     return temp_list
+
+
+def delete_duplitates(data_list):
+    for index, item in enumerate(data_list):
+        if index != 0:
+            date1 = data_list[index-1][0]
+            date2 = data_list[index][0]
+            if date1 == date2 :
+                data_list.pop(index)
+
+    return data_list
+
+
+def combine_lists(data_list):
+    num_of_lists = len(data_list)
+    list_size = len(data_list[0])
+    print(num_of_lists)
+    combined_list = []
+    for i in range (0,num_of_lists):
+        if i == 0:
+            for j in range (0,list_size):
+                combined_list.append(data_list[i][j])
+        else:
+            for j in range (0,list_size):
+                new_entry = data_list[i][j][1:]
+                for k in range (0,len(new_entry)):
+                    combined_list[j].append(new_entry[k])
+
+    return combined_list
