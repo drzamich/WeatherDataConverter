@@ -11,6 +11,7 @@ def generate_report(mode = None, text=None, missing_values_list = None, intepola
     dirpath = 'reports/'+current_date+'/'
     if not os.path.isdir(dirpath):
         os.mkdir(dirpath)
+        os.mkdir(dirpath+'therakles/')
 
     if mode == 1 and text is not None:  # adding text to the report file
 

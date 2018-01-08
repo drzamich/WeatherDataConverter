@@ -8,8 +8,8 @@ lon = 8.23
 
 
 use_recent_data= 0
-use_offline_data = 0
-testing_mode = 1
+use_offline_data = 1
+testing_mode = 0
 
 observedCharacteristics = [
     ['air_temperature', 'TU',[3,4]],                #0
@@ -27,9 +27,11 @@ dirpath_offline = 'E:\\DOKUMENTY\\WeatherData\\'
 dirpath_ftp = '/pub/CDC/observations_germany/climate/hourly/'
 dirpath_downloaded = 'data/download/'
 
-current_date = datetime.datetime.now()
+current_date_ts = datetime.datetime.now()
 
-current_date = current_date.strftime('%Y%m%d - %H%M%S')
+current_date = current_date_ts.strftime('%Y%m%d - %H%M%S')
+current_year = current_date_ts.strftime('%Y')
+past_year = str(int(current_year)-1)
 
 fmt = '%Y%m%d%H'  # format of the timestamp
 

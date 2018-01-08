@@ -79,7 +79,7 @@ def create_stations_list():
                 if char_name != 'solar':
                     dateslist_historical.append(filename_zip[4])
                 else:
-                    dateslist_historical.append('999')
+                    dateslist_historical.append(past_year+'1231')
         # creating list of files in the folder to extract the ending date of "historical" weather data which is "hidden"
         # in the zip file name
         #this is also needed to check if the data from the station on the list is actually available as a zip file
@@ -181,7 +181,7 @@ def getbeststations(lat,lon,year):
     for x in range(0,len(observedCharacteristics)):
         beststations[x].insert(0,observedCharacteristics[x][0])
 
-    print(beststations)
+    # print(beststations)
     t = PrettyTable(['Char','ID','DateStart','DateEnd','Elev.','Lat.','Lon.','City','Bundesland','in_hist','end_hist'])
 
 

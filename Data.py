@@ -43,15 +43,22 @@ def generate_raw_data(station_list,year):
 
         generate_report(mode=1,text=report_text)
 
+        strip_leap_year(interpolated_data_list_entry)
+
         if index == 5:
             prepare_data(interpolated_data_list_entry,5)
 
+        if index == 5 or index == 0:
+            generate_therakles_files(index,interpolated_data_list_entry)
+
+
+
     generate_report(mode=2,missing_values_list=missing_values_list)
     generate_report(mode=3, intepolated_data_list=interpolated_data_list)
-    interpolated_data_list = combine_lists(interpolated_data_list)
+    # interpolated_data_list = combine_lists(interpolated_data_list)
 
-    interpolated_data_list = strip_leap_year(interpolated_data_list)
-    save_list_to_file(interpolated_data_list,'whole.txt')
+    # interpolated_data_list = strip_leap_year(interpolated_data_list)
+    # save_list_to_file(interpolated_data_list,'whole.txt')
 
 
 #Function that searches the given data list for missing hours
@@ -333,22 +340,71 @@ def strip_leap_year(data_list):
 
 def prepare_data(data_list,char_num):
     if char_num == 5: #solar
+
+        # data_list_copy = data_list.copy()
         for index,item in enumerate(data_list):
             # Calculating the global and diffuse horizontal radiation values in W/m2
             diff_hour = float(item[2])   # J/cm^2*h
             diff_instant = (10000.0/3600.0)*diff_hour  #W/m2
+            diff_instant_str = "{0:.2f}".format(diff_instant)
 
             glob_hour = float(item[3])    # J/cm^2*h
             glob_instant = (10000.0/3600.0)*glob_hour  #W/m2
+            glob_instant_str = "{0:.2f}".format(glob_instant)
 
-            item.append(diff_instant)   #item[6]
-            item.append(glob_instant)   #item[7]
+            item.append(diff_instant_str)   #item[6]
+            item.append(glob_instant_str)   #item[7]
 
             #Calculating the direct normal radiation
             day_of_year = math.ceil(index+1/24.0)
             zenith = float(item[5])
 
             dir_nor = Irradiance.disc(glob_instant,zenith,day_of_year)
-            # print(dir_nor)
+            direct_instant = dir_nor['dni']
+            direct_instant_str = "{0:.2f}".format(direct_instant)
+            item.append(direct_instant_str)
+
+
+def generate_therakles_files(mode,data_list):
+    if mode == 0: #air temperature
+        filepath = 'reports/'+current_date+'/therakles/Temperature.ccd'
+        f = open(filepath,'a')
+        f.write('TEMPER \n')
+        for index,item in enumerate(data_list):
+            day_of_year = str(math.floor(index/ 24.0))
+            date = item[0]
+            temp = str(item[1])
+            hour = date[8:10]
+            if hour[0] == '0' : hour = hour[1]
+            time = hour+':00:00'
+            f.write(day_of_year+'\t'+time+'\t'+temp+'\n')
+        f.close
+
+    if mode == 5:  # solar
+        filepath1 = 'reports/' + current_date + '/therakles/DiffuseRadiation.ccd'
+        filepath2 = 'reports/' + current_date + '/therakles/DirectRadiation.ccd'
+        f1 = open(filepath1, 'a')
+        f2 = open(filepath2,'a')
+
+        f1.write('DIFFRAD \n')
+        f2.write('DIRRAD \n')
+
+        for index, item in enumerate(data_list):
+            day_of_year = str(math.floor(index / 24.0))
+            date = item[0]
+            diffrad = str(item[6])
+            dirrad = str(item[8])
+
+            hour = date[8:10]
+            if hour[0] == '0': hour = hour[1]
+            time = hour + ':00:00'
+            f1.write(day_of_year + '\t' + time + '\t' + diffrad + '\n')
+            f2.write(day_of_year + '\t' + time + '\t' + dirrad + '\n')
+
+        f1.close()
+        f2.close()
+
+
+
 
 
