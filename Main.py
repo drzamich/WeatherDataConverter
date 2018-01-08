@@ -2,8 +2,7 @@ from Helping import *
 from Settings import *
 from Station import *
 from Data import *
-from datetime import datetime
-
+from datetime import *
 
 
 if __name__=="__main__":

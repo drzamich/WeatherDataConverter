@@ -4,7 +4,8 @@ import ftplib
 import math
 import os
 from pathlib import Path
-from datetime import *
+from datetime import datetime
+from Settings import *
 import Irradiance
 
 def create_weather_set(station_list,year):
@@ -41,6 +42,9 @@ def generate_raw_data(station_list,year):
         +'There were %s periods with missing values \n' %len(missing_values_entry) )
 
         generate_report(mode=1,text=report_text)
+
+        if index == 5:
+            prepare_data(interpolated_data_list_entry,5)
 
     generate_report(mode=2,missing_values_list=missing_values_list)
     generate_report(mode=3, intepolated_data_list=interpolated_data_list)
@@ -81,8 +85,8 @@ def interpolate_data_list(data_list,char_num):
             #putting the date togehter out of the data in the list
             date1 = data_list[index-1][0]
             date2 = data_list[index][0]
-            tstamp1 = datetime.strptime(date1,fmt)
-            tstamp2 = datetime.strptime(date2,fmt)
+            tstamp1 = datetime.datetime.strptime(date1,fmt)
+            tstamp2 = datetime.datetime.strptime(date2,fmt)
 
             td = tstamp2 - tstamp1
 
@@ -120,11 +124,11 @@ def interpolate_data_list(data_list,char_num):
                     new_entry = []
                     date1 = data_list[index-1][0]
 
-                    tstamp1 = datetime.strptime(date1,fmt)
+                    tstamp1 = datetime.datetime.strptime(date1,fmt)
 
-                    tstamp_new = tstamp1+timedelta(hours=x)
+                    tstamp_new = tstamp1+datetime.timedelta(hours=x)
 
-                    date_new = datetime.strftime(tstamp_new,fmt)
+                    date_new = datetime.datetime.strftime(tstamp_new,fmt)
 
                     new_entry.append(date_new)
                     for i in range(0,len(entry)-1):
@@ -137,13 +141,13 @@ def interpolate_data_list(data_list,char_num):
             if not str(last_date).endswith('123123'):
                 missing_list.append('after:')
                 missing_list.append(last_date)
-                tstamp1 = datetime.strptime(last_date, fmt)
+                tstamp1 = datetime.datetime.strptime(last_date, fmt)
                 tstamp_new = tstamp1
                 while True:
                     new_element = data_list[len(data_list)-1].copy()
                     a=1
-                    tstamp_new = tstamp_new+timedelta(hours=a)
-                    newdate = datetime.strftime(tstamp_new,fmt)
+                    tstamp_new = tstamp_new+datetime.timedelta(hours=a)
+                    newdate = datetime.datetime.strftime(tstamp_new,fmt)
                     new_element[0] = newdate
                     data_list.insert(len(data_list)+1,new_element)
                     a +=1
@@ -314,11 +318,11 @@ def strip_leap_year(data_list):
     boundary_date = str(year)+'022823'
     for item in data_list:
         date = item[0]
-        tstamp1 = datetime.strptime(date,fmt)
-        tstamp2 = datetime.strptime(boundary_date,fmt)
+        tstamp1 = datetime.datetime.strptime(date,fmt)
+        tstamp2 = datetime.datetime.strptime(boundary_date,fmt)
         if tstamp1 > tstamp2:
-            tstamp3 = tstamp1 + timedelta(days=1)
-            date_new = datetime.strftime(tstamp3,fmt)
+            tstamp3 = tstamp1 + datetime.timedelta(days=1)
+            date_new = datetime.datetime.strftime(tstamp3,fmt)
             item[0] = date_new
 
     #removing last 24 entires on the data_list
@@ -329,8 +333,6 @@ def strip_leap_year(data_list):
 
 def prepare_data(data_list,char_num):
     if char_num == 5: #solar
-
-
         for index,item in enumerate(data_list):
             # Calculating the global and diffuse horizontal radiation values in W/m2
             diff_hour = float(item[2])   # J/cm^2*h
@@ -347,6 +349,6 @@ def prepare_data(data_list,char_num):
             zenith = float(item[5])
 
             dir_nor = Irradiance.disc(glob_instant,zenith,day_of_year)
-            print(dir_nor)
+            # print(dir_nor)
 
 

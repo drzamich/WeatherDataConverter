@@ -2,51 +2,89 @@ import os
 import math
 from Settings import *
 from prettytable import PrettyTable
+from pathlib import Path
+import ftplib
 
-def createstationlist():
-    stations_big_list = []
+def create_stations_list():
+    stations_list = []
 
     # dirpath = os.path.abspath(os.curdir)
 
     for characteristics in observedCharacteristics:
-        # Absolute path to the file with station list
-        # Solar data are not separated in recent and historical - therefore the if clause
-        if (characteristics[0] != 'solar'):
-            folderpath_historical = dirpath_offline + characteristics[0] + '\\historical\\'
-            folderpath_recent = dirpath_offline + characteristics[0] + '\\recent\\'
-            filepath = dirpath_offline + characteristics[0] + '\\historical\\' \
-                       + characteristics[1] + '_Stundenwerte_Beschreibung_Stationen.txt'
+        char_name = characteristics[0]
+        char_short = characteristics[1]
+        filename = char_short+'_Stundenwerte_Beschreibung_Stationen.txt'
+        idlist_files = []  # list with IDs of stations with zip files in historical folder
+        dateslist_historical = []  # list of dates of ends of historical data
+
+        if use_offline_data:
+            if (char_name != 'solar'):
+                folderpath = dirpath_offline + char_name + '\\historical\\'
+            else:
+                folderpath = dirpath_offline + char_name + '\\'
+
+            filepath = folderpath + filename
+            fileslist = os.listdir(folderpath)
+
         else:
-            folderpath_recent = dirpath_offline + characteristics[0]
-            filepath = dirpath_offline + characteristics[0] + '\\' \
-                       + characteristics[1] + '_Stundenwerte_Beschreibung_Stationen.txt'
+            # Connecting to the server
+            try:
+                ftp = ftplib.FTP('ftp-cdc.dwd.de')
+                ftp.login(user='anonymous', passwd='')
+            except Exception:
+                print('Unable to connect to FTP server')
 
-        # creating list of files in the folder to extract the ending date of "historical" weather data which is "hidden"
-        # in the zip file name
-        #this is also needed to check if the data from the station on the list is actually available as a zip file
-        if characteristics[0] is not 'solar':
-            fileslist_historical = os.listdir(folderpath_historical)
-            idlist_historical = []
-            dateslist_historical = []
-            for file in fileslist_historical:
-                if file.endswith(".zip"):
-                    filename = file.split('_')
-                    idlist_historical.append(filename[2])
-                    dateslist_historical.append(filename[4])
+            if char_name != "solar":
+                path_ftp = dirpath_ftp + char_name + '/historical/'
+            else:
+                path_ftp = dirpath_ftp + char_name + '/'
 
-        fileslist_recent = os.listdir(folderpath_recent)
-        idlist_recent = []
-        for file in fileslist_recent:
-            if file.endswith(".zip"):
-                filename = file.split('_')
-                idlist_recent.append(filename[2])
+            ftp.cwd(path_ftp)
 
-        #reading the file with the station list
+            path_local = dirpath_downloaded + char_name+ '/'
+            ftp.cwd(path_ftp)
+            filepath = path_local + filename
+
+            if Path(filepath).is_file():
+                continue
+            # If the file does not exist, download process proceeds
+            else:
+                file = open(filepath, 'wb')
+                try:
+                    ftp.retrbinary('RETR %s' % filename, file.write)
+                except Exception:
+                    print('Unable to download Beschreibung file from FTP server')
+                file.close()
+
+            ls = []
+            ftp.retrlines('MLSD', ls.append)  # listing files in the directory
+            fileslist = []
+            for line in ls:
+                line_splitted = line.split(";")
+                for line_inner in line_splitted:
+                    if str(line_inner).strip().endswith('.zip'):
+                        fileslist.append(str(line_inner).strip())
+
+            ftp.quit()
+
         file = open(filepath, 'r')
         whole_file = file.readlines()
         file.close()
-        stations_small_list = []
 
+
+        for file in fileslist:
+            if file.endswith(".zip"):
+                filename_zip = file.split('_')
+                idlist_files.append(filename_zip[2])
+                if char_name != 'solar':
+                    dateslist_historical.append(filename_zip[4])
+                else:
+                    dateslist_historical.append('999')
+        # creating list of files in the folder to extract the ending date of "historical" weather data which is "hidden"
+        # in the zip file name
+        #this is also needed to check if the data from the station on the list is actually available as a zip file
+
+        station = []
         historical_list_pointer = 0
         # Skipping first two lines not consist of station data
         # Going over every line in the file
@@ -59,6 +97,7 @@ def createstationlist():
                 override = len(splitted) - 8
                 bundesland = splitted[len(splitted) - 1]
 
+                #putting the name of the city together
                 name = ''
                 for j in range(0, override + 1):
                     if (j == 0):
@@ -73,30 +112,27 @@ def createstationlist():
                 for j in range(0, override):
                     del splitted[-1]
 
+            #default values for parameters mentioned below is 0
             splitted.append(0)  # splitted[8] is_in_historical
             splitted.append(0)  # splitted[9] date_end_historical
-            splitted.append(0)  # splitted[10] is_in_recent
 
-            if splitted[0] in idlist_historical:
+            if splitted[0] in idlist_files:
                 splitted[8] = 1
                 splitted[9] = dateslist_historical[historical_list_pointer]
                 historical_list_pointer += 1
 
-            if splitted[0] in idlist_recent:
-                splitted[10] = 1
-
             #if the station does not exists in the weather data, it wont be added to the list
             if(splitted[8] != 0):
-                stations_small_list.append(splitted)
+                station.append(splitted)
 
-        stations_big_list.append(stations_small_list)
+        stations_list.append(station)
 
 
-    return stations_big_list
+    return stations_list
 
 
 # Function that creates appropriate list depending on the choosen year
-def yearappropriatelist(year, list):
+def year_appropriate_stations_list(year, list):
     startdate = int(str(year) +'0101')
     enddate = int(str(year)+'1231')
     newlist = []
@@ -129,8 +165,8 @@ def gpsdistance(lat1,lon1,lat2,lon2):
     return R*c
 
 def getbeststations(lat,lon,year):
-    list = createstationlist()
-    yearlist = yearappropriatelist(year,list)
+    list = create_stations_list()
+    yearlist = year_appropriate_stations_list(year, list)
     beststations = []
     for list in yearlist:
         distancemax = 99999999999
@@ -145,7 +181,9 @@ def getbeststations(lat,lon,year):
     for x in range(0,len(observedCharacteristics)):
         beststations[x].insert(0,observedCharacteristics[x][0])
 
-    t = PrettyTable(['Char','ID','DateStart','DateEnd','Elev.','Lat.','Lon.','City','Bundesland','in_hist','end_hist','in_recent'])
+    print(beststations)
+    t = PrettyTable(['Char','ID','DateStart','DateEnd','Elev.','Lat.','Lon.','City','Bundesland','in_hist','end_hist'])
+
 
     for x in range(0,len(observedCharacteristics)):
         t.add_row(beststations[x])

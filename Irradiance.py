@@ -36,7 +36,7 @@ SURFACE_ALBEDOS = {'urban': 0.18,
                    'dirty steel': 0.08}
 
 
-[docs]def extraradiation(datetime_or_doy, solar_constant=1366.1, method='spencer',
+def extraradiation(datetime_or_doy, solar_constant=1366.1, method='spencer',
                    epoch_year=2014, **kwargs):
     """
     Determine extraterrestrial radiation from day of year.
@@ -143,7 +143,7 @@ SURFACE_ALBEDOS = {'urban': 0.18,
 
 
 
-[docs]def aoi_projection(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth):
+def aoi_projection(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth):
     """
     Calculates the dot product of the solar vector and the surface
     normal.
@@ -181,7 +181,7 @@ SURFACE_ALBEDOS = {'urban': 0.18,
 
 
 
-[docs]def aoi(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth):
+def aoi(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth):
     """
     Calculates the angle of incidence of the solar vector on a surface.
     This is the angle between the solar vector and the surface normal.
@@ -218,7 +218,7 @@ SURFACE_ALBEDOS = {'urban': 0.18,
 
 
 
-[docs]def poa_horizontal_ratio(surface_tilt, surface_azimuth,
+def poa_horizontal_ratio(surface_tilt, surface_azimuth,
                          solar_zenith, solar_azimuth):
     """
     Calculates the ratio of the beam components of the plane of array
@@ -261,7 +261,7 @@ SURFACE_ALBEDOS = {'urban': 0.18,
 
 
 
-[docs]def beam_component(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
+def beam_component(surface_tilt, surface_azimuth, solar_zenith, solar_azimuth,
                    dni):
     """
     Calculates the beam component of the plane of array irradiance.
@@ -292,7 +292,7 @@ SURFACE_ALBEDOS = {'urban': 0.18,
 
 
 
-[docs]def total_irrad(surface_tilt, surface_azimuth,
+def total_irrad(surface_tilt, surface_azimuth,
                 apparent_zenith, azimuth,
                 dni, ghi, dhi, dni_extra=None, airmass=None,
                 albedo=.25, surface_type=None,
@@ -391,7 +391,7 @@ SURFACE_ALBEDOS = {'urban': 0.18,
 
 
 
-[docs]def globalinplane(aoi, dni, poa_sky_diffuse, poa_ground_diffuse):
+def globalinplane(aoi, dni, poa_sky_diffuse, poa_ground_diffuse):
     r'''
     Determine the three components on in-plane irradiance
 
@@ -448,7 +448,7 @@ SURFACE_ALBEDOS = {'urban': 0.18,
 
 
 
-[docs]def grounddiffuse(surface_tilt, ghi, albedo=.25, surface_type=None):
+def grounddiffuse(surface_tilt, ghi, albedo=.25, surface_type=None):
     '''
     Estimate diffuse irradiance from ground reflections given
     irradiance, albedo, and surface tilt
@@ -516,7 +516,7 @@ SURFACE_ALBEDOS = {'urban': 0.18,
 
 
 
-[docs]def isotropic(surface_tilt, dhi):
+def isotropic(surface_tilt, dhi):
     r'''
     Determine diffuse irradiance from the sky on a tilted surface using
     the isotropic sky model.
@@ -564,7 +564,7 @@ SURFACE_ALBEDOS = {'urban': 0.18,
 
 
 
-[docs]def klucher(surface_tilt, surface_azimuth, dhi, ghi, solar_zenith,
+def klucher(surface_tilt, surface_azimuth, dhi, ghi, solar_zenith,
             solar_azimuth):
     r'''
     Determine diffuse irradiance from the sky on a tilted surface
@@ -653,7 +653,7 @@ SURFACE_ALBEDOS = {'urban': 0.18,
 
 
 
-[docs]def haydavies(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
+def haydavies(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
               solar_zenith=None, solar_azimuth=None, projection_ratio=None):
     r'''
     Determine diffuse irradiance from the sky on a tilted surface using
@@ -747,7 +747,7 @@ SURFACE_ALBEDOS = {'urban': 0.18,
 
 
 
-[docs]def reindl(surface_tilt, surface_azimuth, dhi, dni, ghi, dni_extra,
+def reindl(surface_tilt, surface_azimuth, dhi, dni, ghi, dni_extra,
            solar_zenith, solar_azimuth):
     r'''
     Determine diffuse irradiance from the sky on a tilted surface using
@@ -852,7 +852,7 @@ SURFACE_ALBEDOS = {'urban': 0.18,
 
 
 
-[docs]def king(surface_tilt, dhi, ghi, solar_zenith):
+def king(surface_tilt, dhi, ghi, solar_zenith):
     '''
     Determine diffuse irradiance from the sky on a tilted surface using
     the King model.
@@ -897,7 +897,7 @@ SURFACE_ALBEDOS = {'urban': 0.18,
 
 
 
-[docs]def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
+def perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
           solar_zenith, solar_azimuth, airmass,
           model='allsitescomposite1990', return_components=False):
     '''
@@ -1084,7 +1084,7 @@ SURFACE_ALBEDOS = {'urban': 0.18,
 
 
 
-[docs]def disc(ghi, zenith, datetime_or_doy, pressure=101325):
+def disc(ghi, zenith, datetime_or_doy, pressure=101325):
     """
     Estimate Direct Normal Irradiance from Global Horizontal Irradiance
     using the DISC model.
@@ -1184,7 +1184,7 @@ SURFACE_ALBEDOS = {'urban': 0.18,
 
 
 
-[docs]def dirint(ghi, zenith, times, pressure=101325., use_delta_kt_prime=True,
+def dirint(ghi, zenith, times, pressure=101325., use_delta_kt_prime=True,
            temp_dew=None):
     """
     Determine DNI from GHI using the DIRINT modification of the DISC
@@ -1336,7 +1336,7 @@ SURFACE_ALBEDOS = {'urban': 0.18,
 
 
 
-[docs]def dirindex(ghi, ghi_clearsky, dni_clearsky, zenith, times, pressure=101325.,
+def dirindex(ghi, ghi_clearsky, dni_clearsky, zenith, times, pressure=101325.,
              use_delta_kt_prime=True, temp_dew=None):
     """
     Determine DNI from GHI using the DIRINDEX model, which is a modification of
@@ -1417,7 +1417,7 @@ SURFACE_ALBEDOS = {'urban': 0.18,
 
 
 
-[docs]def erbs(ghi, zenith, doy):
+def erbs(ghi, zenith, doy):
     r"""
     Estimate DNI and DHI from GHI using the Erbs model.
 
@@ -1507,7 +1507,7 @@ SURFACE_ALBEDOS = {'urban': 0.18,
 
 
 
-[docs]def liujordan(zenith, transmittance, airmass, dni_extra=1367.0):
+def liujordan(zenith, transmittance, airmass, dni_extra=1367.0):
     '''
     Determine DNI, DHI, GHI from extraterrestrial flux, transmittance,
     and optical air mass number.
