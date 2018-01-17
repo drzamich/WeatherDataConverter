@@ -7,7 +7,7 @@ def save_list_to_file(list,filename):
         file.write(str(entry)+'\n')
     file.close
 
-def generate_report(mode = None, text=None, missing_values_list = None, intepolated_data_list = None):
+def generate_report(mode = None, text=None, missing_values_list = None, intepolated_data_list = None, missing_entries=None):
     dirpath = 'reports/'+current_date+'/'
     if not os.path.isdir(dirpath):
         os.mkdir(dirpath)

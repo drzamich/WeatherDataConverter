@@ -20,12 +20,11 @@ def generate_raw_data(station_list,year):
     interpolated_data_list = []
     whole_list = []
 
-
     for index,char in enumerate(observedCharacteristics):
 
         char_name = observedCharacteristics[index][0]
         raw_data_list = get_data_from_file(index,station_list[index][1],year)
-        interpolated_data_list_entry, missing_values_entry = interpolate_data_list(raw_data_list,index)
+        interpolated_data_list_entry, missing_values_entry, missing_entries = insert_missing_dates(raw_data_list)
         interpolated_data_list_entry = delete_duplitates(interpolated_data_list_entry)
 
         if not leap_year:
@@ -39,17 +38,19 @@ def generate_raw_data(station_list,year):
         missing_values_list.append(missing_values_entry)
 
         report_text = ('\nSuccesfully extracted and interpolated data for '+char_name+'\n'
-        +'There were %s periods with missing values \n' %len(missing_values_entry) )
+        +'There are %i missing hour entries in the original data set \n' % missing_entries )
 
         generate_report(mode=1,text=report_text)
 
-        strip_leap_year(interpolated_data_list_entry)
+        if leap_year:
+            strip_leap_year(interpolated_data_list_entry)
 
         if index == 5:
             prepare_data(interpolated_data_list_entry,5)
+            generate_validation_data(interpolated_data_list_entry)
 
-        if index == 5 or index == 0:
-            generate_therakles_files(index,interpolated_data_list_entry)
+        # if index == 5 or index == 0:
+        #     generate_therakles_files(index,interpolated_data_list_entry)
 
 
 
@@ -65,102 +66,168 @@ def generate_raw_data(station_list,year):
 #Then it interpolates the values based on the records neighbouting to missing values and inserts them in the middle
 #of the list
 
-def interpolate_data_list(data_list,char_num):
+def insert_missing_dates(data_list):
     missing_list = []
+    missing_entries = 0
+    size=len(data_list[0])
 
-    for index,entry in enumerate(data_list):
-
+    for index, entry in enumerate(data_list):
         if index == 0:
-
             if not data_list[0][0].endswith('010100'):
+                missing_entries += 1
+                new_entry = [-999] * size
                 missing_list.append('before')
                 missing_list.append(data_list[0][0])
 
                 year = data_list[0][0][0:4]
-                new_start = [year+'010100']
-                for index,item in enumerate(data_list[0]):
-                    if index!=0:
-                        new_start.append(item)
-                data_list.insert(0,new_start)
+                new_date = year+'010100'
+                new_entry[0] = new_date
+                data_list.insert(0,new_entry)
 
 
-
-        elif index!=0:
-            #to check if any values are missing, the time difference between two entries is calculated
-            #if the time fidderence in hours is bigger than 1, that means there is a missing value
-
-            #putting the date togehter out of the data in the list
-            date1 = data_list[index-1][0]
+        elif index != 0 and index != (len(data_list) - 1):
+            date1 = data_list[index - 1][0]
             date2 = data_list[index][0]
-            tstamp1 = datetime.datetime.strptime(date1,fmt)
-            tstamp2 = datetime.datetime.strptime(date2,fmt)
+            tstamp1 = datetime.datetime.strptime(date1, fmt)
+            tstamp2 = datetime.datetime.strptime(date2, fmt)
 
             td = tstamp2 - tstamp1
 
-            td_hours = td.total_seconds()/3600
+            td_hours = td.total_seconds() / 3600
 
-            new_values = []
-            #if the time diff between dates is bigger than 1, that means there is a missing value
+            # if the time diff between dates is bigger than 1, that means there is a missing value
             if td_hours > 1.0:
-                missing_list.append([date1,date2])
-                for i in range(1,len(entry)):
-                    new_values_entry = []
-                    value1 = float(data_list[index-1][i])
-                    value2 = float(data_list[index][i])
-                    incr = (value2 - value1)/td_hours
+                missing_entries += td_hours
+                missing_list.append([date1, date2])
+                # inserting calculated values to the original list
+                for x in range(1, int(td_hours)):
 
-                    for x in range(1,int(td_hours)):
-                        if value1 == -999.0 and value2 == -999.0:
-                            new_val = -999.0
-                        elif value1 == -999.0 and value2 != -999.0:
-                            new_val = value2
-                        elif value1 != -999.0 and value2 == -999.0:
-                            new_val = value1
-                        elif value1 != -999.0 and value2 != -999.0:
-                            new_val = value1+x*incr
+                    tstamp_new = tstamp1 + datetime.timedelta(hours=x)
 
-                        if char_num==1:                                      #special case for interpolation of clouds
-                            new_values_entry.append(math.ceil(new_val)) #the cloud cover has to be a  whole number
-                        else:
-                            new_values_entry.append(new_val)
+                    date_new = datetime.datetime.strftime(tstamp_new, fmt)
 
-                    new_values.append(new_values_entry)
+                    #for some reason this cannot be defined "higher". otherwise all the missing entries have the same
+                    #date like the last missing one
+                    new_entry = [-999]*size
+                    new_entry[0] = date_new
+                    data_list.insert((index - 1) + x, new_entry)
 
-                #inserting calculated values to the original list
-                for x in range(1,int(td_hours)):
-                    new_entry = []
-                    date1 = data_list[index-1][0]
-
-                    tstamp1 = datetime.datetime.strptime(date1,fmt)
-
-                    tstamp_new = tstamp1+datetime.timedelta(hours=x)
-
-                    date_new = datetime.datetime.strftime(tstamp_new,fmt)
-
-                    new_entry.append(date_new)
-                    for i in range(0,len(entry)-1):
-                        new_entry.append(new_values[i][x-1])
-
-                    data_list.insert((index-1)+x,new_entry)
-
-        if index==len(data_list)-1:
-            last_date = data_list[len(data_list)-1][0]
+        elif index == (len(data_list) - 1):
+            last_date = data_list[len(data_list) - 1][0]
             if not str(last_date).endswith('123123'):
                 missing_list.append('after:')
                 missing_list.append(last_date)
                 tstamp1 = datetime.datetime.strptime(last_date, fmt)
                 tstamp_new = tstamp1
                 while True:
-                    new_element = data_list[len(data_list)-1].copy()
-                    a=1
-                    tstamp_new = tstamp_new+datetime.timedelta(hours=a)
-                    newdate = datetime.datetime.strftime(tstamp_new,fmt)
-                    new_element[0] = newdate
-                    data_list.insert(len(data_list)+1,new_element)
-                    a +=1
+                    new_entry = [-999] * size
+                    a = 1
+                    tstamp_new = tstamp_new + datetime.timedelta(hours=a)
+                    newdate = datetime.datetime.strftime(tstamp_new, fmt)
+                    new_entry[0] = newdate
+                    data_list.insert(len(data_list) + 1, new_entry)
+                    a += 1
+                    missing_entries += 1
                     if newdate.endswith('123123'): break
 
-    return data_list, missing_list
+    return data_list, missing_list, missing_entries
+
+# def interpolate_data_list(data_list,char_num):
+#     missing_list = []
+#
+#     for index,entry in enumerate(data_list):
+#
+#         if index == 0:
+#
+#             if not data_list[0][0].endswith('010100'):
+#                 missing_list.append('before')
+#                 missing_list.append(data_list[0][0])
+#
+#                 year = data_list[0][0][0:4]
+#                 new_start = [year+'010100']
+#                 for index,item in enumerate(data_list[0]):
+#                     if index!=0:
+#                         new_start.append(item)
+#                 data_list.insert(0,new_start)
+#                 print('Missing at the begining:' + new_start)
+#
+#         elif index!=0:
+#             #to check if any values are missing, the time difference between two entries is calculated
+#             #if the time fidderence in hours is bigger than 1, that means there is a missing value
+#
+#             #putting the date togehter out of the data in the list
+#             date1 = data_list[index-1][0]
+#             date2 = data_list[index][0]
+#             tstamp1 = datetime.datetime.strptime(date1,fmt)
+#             tstamp2 = datetime.datetime.strptime(date2,fmt)
+#
+#             td = tstamp2 - tstamp1
+#
+#             td_hours = td.total_seconds()/3600
+#
+#             new_values = []
+#             #if the time diff between dates is bigger than 1, that means there is a missing value
+#             if td_hours > 1.0:
+#                 missing_list.append([date1,date2])
+#                 for i in range(1,len(entry)):
+#                     new_values_entry = []
+#                     value1 = float(data_list[index-1][i])
+#                     value2 = float(data_list[index][i])
+#                     incr = (value2 - value1)/td_hours
+#
+#                     for x in range(1,int(td_hours)):
+#                         if value1 == -999.0 and value2 == -999.0:
+#                             new_val = -999.0
+#                         elif value1 == -999.0 and value2 != -999.0:
+#                             new_val = value2
+#                         elif value1 != -999.0 and value2 == -999.0:
+#                             new_val = value1
+#                         elif value1 != -999.0 and value2 != -999.0:
+#                             new_val = value1+x*incr
+#
+#                         if char_num==1:                                      #special case for interpolation of clouds
+#                             new_values_entry.append(math.ceil(new_val)) #the cloud cover has to be a  whole number
+#                         else:
+#                             new_values_entry.append(new_val)
+#
+#                     new_values.append(new_values_entry)
+#
+#                 #inserting calculated values to the original list
+#                 for x in range(1,int(td_hours)):
+#                     new_entry = []
+#                     date1 = data_list[index-1][0]
+#
+#                     tstamp1 = datetime.datetime.strptime(date1,fmt)
+#
+#                     tstamp_new = tstamp1+datetime.timedelta(hours=x)
+#
+#                     date_new = datetime.datetime.strftime(tstamp_new,fmt)
+#
+#                     new_entry.append(date_new)
+#                     for i in range(0,len(entry)-1):
+#                         new_entry.append(new_values[i][x-1])
+#
+#                     data_list.insert((index-1)+x,new_entry)
+#
+#         elif index==len(data_list)-1:
+#             print('elo')
+#             last_date = data_list[len(data_list)-1][0]
+#             if not str(last_date).endswith('123123'):
+#                 missing_list.append('after:')
+#                 missing_list.append(last_date)
+#                 tstamp1 = datetime.datetime.strptime(last_date, fmt)
+#                 tstamp_new = tstamp1
+#                 while True:
+#                     new_element = data_list[len(data_list)-1].copy()
+#                     a=1
+#                     tstamp_new = tstamp_new+datetime.timedelta(hours=a)
+#                     newdate = datetime.datetime.strftime(tstamp_new,fmt)
+#                     new_element[0] = newdate
+#                     data_list.insert(len(data_list)+1,new_element)
+#                     a +=1
+#                     if newdate.endswith('123123'): break
+#
+#     return data_list, missing_list
 
 
 def download_data_from_server(station_list):
@@ -324,7 +391,7 @@ def strip_leap_year(data_list):
     #changing the date of each record after 28th Feb 23:00 by adding one day
     boundary_date = str(year)+'022823'
     for item in data_list:
-        date = item[0]
+        date = str(item[0])
         tstamp1 = datetime.datetime.strptime(date,fmt)
         tstamp2 = datetime.datetime.strptime(boundary_date,fmt)
         if tstamp1 > tstamp2:
@@ -364,45 +431,53 @@ def prepare_data(data_list,char_num):
             direct_instant_str = "{0:.2f}".format(direct_instant)
             item.append(direct_instant_str)
 
+#
+# def generate_therakles_files(mode,data_list):
+#     if mode == 0: #air temperature
+#         filepath = 'reports/'+current_date+'/therakles/Temperature.ccd'
+#         f = open(filepath,'a')
+#         f.write('TEMPER \n')
+#         for index,item in enumerate(data_list):
+#             day_of_year = str(math.floor(index/ 24.0))
+#             date = item[0]
+#             temp = str(item[1])
+#             hour = date[8:10]
+#             if hour[0] == '0' : hour = hour[1]
+#             time = hour+':00:00'
+#             f.write(day_of_year+'\t'+time+'\t'+temp+'\n')
+#         f.close
+#
+#     if mode == 5:  # solar
+#         filepath1 = 'reports/' + current_date + '/therakles/DiffuseRadiation.ccd'
+#         filepath2 = 'reports/' + current_date + '/therakles/DirectRadiation.ccd'
+#         f1 = open(filepath1, 'a')
+#         f2 = open(filepath2,'a')
+#
+#         f1.write('DIFFRAD \n')
+#         f2.write('DIRRAD \n')
+#
+#         for index, item in enumerate(data_list):
+#             day_of_year = str(math.floor(index / 24.0))
+#             date = item[0]
+#             diffrad = str(item[6])
+#             dirrad = str(item[8])
+#
+#             hour = date[8:10]
+#             if hour[0] == '0': hour = hour[1]
+#             time = hour + ':00:00'
+#             f1.write(day_of_year + '\t' + time + '\t' + diffrad + '\n')
+#             f2.write(day_of_year + '\t' + time + '\t' + dirrad + '\n')
+#
+#         f1.close()
+#         f2.close()
 
-def generate_therakles_files(mode,data_list):
-    if mode == 0: #air temperature
-        filepath = 'reports/'+current_date+'/therakles/Temperature.ccd'
-        f = open(filepath,'a')
-        f.write('TEMPER \n')
-        for index,item in enumerate(data_list):
-            day_of_year = str(math.floor(index/ 24.0))
-            date = item[0]
-            temp = str(item[1])
-            hour = date[8:10]
-            if hour[0] == '0' : hour = hour[1]
-            time = hour+':00:00'
-            f.write(day_of_year+'\t'+time+'\t'+temp+'\n')
-        f.close
 
-    if mode == 5:  # solar
-        filepath1 = 'reports/' + current_date + '/therakles/DiffuseRadiation.ccd'
-        filepath2 = 'reports/' + current_date + '/therakles/DirectRadiation.ccd'
-        f1 = open(filepath1, 'a')
-        f2 = open(filepath2,'a')
 
-        f1.write('DIFFRAD \n')
-        f2.write('DIRRAD \n')
-
-        for index, item in enumerate(data_list):
-            day_of_year = str(math.floor(index / 24.0))
-            date = item[0]
-            diffrad = str(item[6])
-            dirrad = str(item[8])
-
-            hour = date[8:10]
-            if hour[0] == '0': hour = hour[1]
-            time = hour + ':00:00'
-            f1.write(day_of_year + '\t' + time + '\t' + diffrad + '\n')
-            f2.write(day_of_year + '\t' + time + '\t' + dirrad + '\n')
-
-        f1.close()
-        f2.close()
+def generate_validation_data(data_list):
+    f = open('data/'+str(year)+'_Dresden_Irradiance.txt','w')
+    f.write('date \t Zenith angle [deg.] \t Sunshine duration [min] \t Diff.Hor [W/m2] \t Dir.Nor [W/m2]')
+    for item in data_list:
+        f.write('\n'+str(item[0])+'\t'+str(item[5])+'\t'+str(item[4])+'\t'+str(item[6])+'\t'+str(item[8]))
 
 
 

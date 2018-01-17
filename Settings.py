@@ -9,7 +9,7 @@ lon = 8.23
 
 use_recent_data= 0
 use_offline_data = 1
-testing_mode = 0
+testing_mode = 1
 
 observedCharacteristics = [
     ['air_temperature', 'TU',[3,4]],                #0
