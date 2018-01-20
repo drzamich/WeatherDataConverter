@@ -140,6 +140,52 @@ class DataConverter:
             direct_instant_str = "{0:.2f}".format(direct_instant)
             item.append(direct_instant_str)
 
+# def generate_therakles_files(mode,data_list):
+#     if mode == 0: #air temperature
+#         filepath = 'reports/'+current_date+'/therakles/Temperature.ccd'
+#         f = open(filepath,'a')
+#         f.write('TEMPER \n')
+#         for index,item in enumerate(data_list):
+#             day_of_year = str(math.floor(index/ 24.0))
+#             date = item[0]
+#             temp = str(item[1])
+#             hour = date[8:10]
+#             if hour[0] == '0' : hour = hour[1]
+#             time = hour+':00:00'
+#             f.write(day_of_year+'\t'+time+'\t'+temp+'\n')
+#         f.close
+#
+#     if mode == 5:  # solar
+#         filepath1 = 'reports/' + current_date + '/therakles/DiffuseRadiation.ccd'
+#         filepath2 = 'reports/' + current_date + '/therakles/DirectRadiation.ccd'
+#         f1 = open(filepath1, 'a')
+#         f2 = open(filepath2,'a')
+#
+#         f1.write('DIFFRAD \n')
+#         f2.write('DIRRAD \n')
+#
+#         for index, item in enumerate(data_list):
+#             day_of_year = str(math.floor(index / 24.0))
+#             date = item[0]
+#             diffrad = str(item[6])
+#             dirrad = str(item[8])
+#
+#             hour = date[8:10]
+#             if hour[0] == '0': hour = hour[1]
+#             time = hour + ':00:00'
+#             f1.write(day_of_year + '\t' + time + '\t' + diffrad + '\n')
+#             f2.write(day_of_year + '\t' + time + '\t' + dirrad + '\n')
+#
+#         f1.close()
+#         f2.close()
+#
+#
+#
+# def generate_validation_data(data_list):
+#     f = open('data/'+str(year)+'_Dresden_Irradiance.txt','w')
+#     f.write('date \t Zenith angle [deg.] \t Sunshine duration [min] \t Diff.Hor [W/m2] \t Dir.Nor [W/m2]')
+#     for item in data_list:
+#         f.write('\n'+str(item[0])+'\t'+str(item[5])+'\t'+str(item[4])+'\t'+str(item[6])+'\t'+str(item[8]))
 
 
 
