@@ -22,5 +22,7 @@ from Settings import *
 import StationSearcher
 import DataReader
 
-explo = StationSearcher.StationSearcher(2016,52,8)
-lala = DataReader.DataReader(explo.list)
+year = 2016
+explo = StationSearcher.StationSearcher(year,52,8)
+lala = DataReader.DataReader(year,explo.list)
+print(lala.raw_data_set[2])

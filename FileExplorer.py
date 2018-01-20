@@ -4,9 +4,7 @@ import os
 from pathlib import Path
 import zipfile
 
-
 dirpath_downloaded = Settings.dirpath_downloaded
-
 
 class FileExplorer:
     offline_data = Settings.use_offline_data
