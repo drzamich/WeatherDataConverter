@@ -20,6 +20,7 @@ from Settings import *
 
 
 import StationSearcher
+import DataReader
 
 explo = StationSearcher.StationSearcher(2016,52,8)
-print(explo.list)
+lala = DataReader.DataReader(explo.list)

@@ -21,73 +21,32 @@ class StationSearcher(FileExplorer.FileExplorer):
         self.list = self.create_station_list(self.year,self.latitude,self.longitude)
 
     def create_station_list(self,year,latitude,longitude):
-        # self.year = year
-        # self.longitude = longitude
-        # self.latitude = latitude
         station_list = []
 
         for char in observed_characteristics:
             char_name = char[0]
             char_short = char[1]
+
             zip_list = self.get_directory_listing(char_name,'.zip')
+
+            #Getting characteristics file
             char_file_name = char_short.upper()+ '_Stundenwerte_Beschreibung_Stationen.txt'
-            char_file = self.get_txt_as_list(char_name,char_file_name)
+
+            filepath = self.generate_dirpath(char_name) + char_file_name
+
+            if not self.offline_data:
+                self.download_file(char_name,char_file_name)
+                filepath = self.generate_dirpath(type='download') + char_file_name
+
+            char_file = self.get_txt_as_list(filepath)
+
             char_file_converted = self.convert_characteristics_file(char_file)
             combined_list = self.combine_zips_and_characteristics(char_file_converted,zip_list)
             best_station = self.choose_best_station(combined_list,self.year,latitude,longitude)
+            best_station.insert(0,char_name)
+            best_station.insert(1,char_short)
             station_list.append(best_station)
         return station_list
-
-    #This function returns the list of files in a directory
-    #As well as the txt file with stations characteristics
-    def get_file_list(self,char_name,char_short,extension):
-
-        files_list = []
-
-        filename = char_short + '_Stundenwerte_Beschreibung_Stationen.txt'
-
-
-        if self.offline_data:
-            files_list = os.listdir(path)
-            file = open(path+filename,'r')
-            characteristics_file = file.readlines()
-            file.close()
-
-        else:
-            #using data from ftp server
-            #Establishing FTP Connection
-            try:
-                ftp = ftplib.FTP('ftp-cdc.dwd.de')
-                ftp.login(user='anonymous', passwd='')
-            except Exception:
-                print('Unable to connect to FTP server')
-
-            ftp.cwd(path)
-            ls = []
-            ftp.retrlines('MLSD', ls.append)  # listing files in the directory
-            for line in ls:
-                line_splitted = line.split(';')
-                for item in line_splitted:
-                    if extension in item:
-                        files_list.append(item.strip())
-
-            filepath = self.dirpath_downloaded + filename
-            file = open(filepath,'wb')
-            try:
-                ftp.retrbinary('RETR %s' % filename, file.write)
-            except Exception:
-                 print('Unable to download file from FTP server')
-            file.close()
-
-            file = open(filepath,'r')
-            characteristics_file = file.readlines()
-            file.close()
-
-            # closing FTP connection
-            ftp.close()
-
-        return files_list, characteristics_file
-
 
 
     #This function converts the raw txt file with station list to a python list
