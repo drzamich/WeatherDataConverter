@@ -7,10 +7,11 @@ import ftplib
 import Settings
 import math
 import sys
+import FileExplorer
 
 observed_characteristics = Settings.observedCharacteristics
 
-class StationSearcher:
+class StationSearcher(FileExplorer.FileExplorer):
 
     def __init__(self,year,latitude,longitude):
         self.year = year
@@ -28,7 +29,9 @@ class StationSearcher:
         for char in observed_characteristics:
             char_name = char[0]
             char_short = char[1]
-            zip_list, char_file = self.get_file_list(char_name,char_short,'zip')
+            zip_list = self.get_directory_listing(char_name,'.zip')
+            char_file_name = char_short.upper()+ '_Stundenwerte_Beschreibung_Stationen.txt'
+            char_file = self.get_txt_as_list(char_name,char_file_name)
             char_file_converted = self.convert_characteristics_file(char_file)
             combined_list = self.combine_zips_and_characteristics(char_file_converted,zip_list)
             best_station = self.choose_best_station(combined_list,self.year,latitude,longitude)
@@ -39,26 +42,12 @@ class StationSearcher:
     #As well as the txt file with stations characteristics
     def get_file_list(self,char_name,char_short,extension):
 
-        dirpath_local = Settings.dirpath_offline
-        dirpath_ftp = Settings.dirpath_ftp
-        dirpath_downloaded = Settings.dirpath_downloaded
-        offline_data = Settings.use_offline_data
-
         files_list = []
 
         filename = char_short + '_Stundenwerte_Beschreibung_Stationen.txt'
 
-        if offline_data:
-            dirpath = dirpath_local
-        else:
-            dirpath = dirpath_ftp
 
-        if char_name != 'solar':
-            path = dirpath + char_name + '/historical/'
-        else:
-            path = dirpath + char_name + '/'
-
-        if offline_data:
+        if self.offline_data:
             files_list = os.listdir(path)
             file = open(path+filename,'r')
             characteristics_file = file.readlines()
@@ -82,7 +71,7 @@ class StationSearcher:
                     if extension in item:
                         files_list.append(item.strip())
 
-            filepath = dirpath_downloaded + filename
+            filepath = self.dirpath_downloaded + filename
             file = open(filepath,'wb')
             try:
                 ftp.retrbinary('RETR %s' % filename, file.write)
