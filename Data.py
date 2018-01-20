@@ -250,8 +250,7 @@ def download_data_from_server(station_list):
 
         if index != 5:
             path = dirpath_ftp + char_name + '/historical/'
-        else:
-            path = dirpath_ftp + char_name
+
 
         ftp.cwd(path) #changing the directory
         ls = []
