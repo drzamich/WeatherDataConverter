@@ -1,28 +1,24 @@
-from Helping import *
-from Settings import *
-# from Station import *
-# from Data import *
-# from datetime import *
-#
-#
-# if __name__=="__main__":
-#     station_list, stations_table = getbeststations(lat,lon,year)
-#
-#     report_text = ('Data extraction executed at %s \n' % str(datetime.now())
-#     +'Choosen year: %s \n' %str(year)
-#     +'Latitude: %s \n' %str(lat)
-#     +'Lognitude: %s \n\n'%str(lon)
-#     +'List of most favourable weather stations: \n'
-#                     )
-#     generate_report(mode=1,text=report_text)
-#     generate_report(mode=1,text=str(stations_table))
-#     weather_data = create_weather_set(station_list,year)
-
-
 import StationSearcher
 import DataReader
+import DataConverter
+import Reporter
 
 year = 2016
-explo = StationSearcher.StationSearcher(year,52,8)
-lala = DataReader.DataReader(year,explo.list)
-print(lala.raw_data_set[2])
+lat = 52.93
+lon = 8.23
+
+if __name__ == '__main__':
+    searcher = StationSearcher.StationSearcher(year, lat, lon)
+    station_list = searcher.station_list
+
+    extractor = DataReader.DataReader(year, station_list)
+    extracted_data = extractor.raw_data_set
+
+    convertor = DataConverter.DataConverter(year, extracted_data)
+    converted_data = convertor.converted_data
+    missing_list = convertor.missing_list
+    missing_entries_list = convertor.missing_entries_list
+
+    reporter = Reporter.Reporter
+    reporter.generate_report_raw_data(reporter, year, lon, lat, station_list, missing_list, missing_entries_list,
+                                      converted_data)

@@ -1,12 +1,3 @@
-import datetime
-from Helping import *
-
-
-year = 2016
-lat = 52.93
-lon = 8.23
-
-
 use_recent_data= 0
 use_offline_data = 1
 testing_mode = 1
@@ -21,17 +12,10 @@ observedCharacteristics = [
     ['sun', 'SD',[3]],                              #6
     ['wind', 'FF',[3,4]]                            #7
 ]
-observations_number = len(observedCharacteristics)
 
 dirpath_offline = 'E:\\DOKUMENTY\\WeatherData\\'
 dirpath_ftp = '/pub/CDC/observations_germany/climate/hourly/'
 dirpath_downloaded = 'data/download/'
-
-current_date_ts = datetime.datetime.now()
-
-current_date = current_date_ts.strftime('%Y%m%d - %H%M%S')
-current_year = current_date_ts.strftime('%Y')
-past_year = str(int(current_year)-1)
 
 fmt = '%Y%m%d%H'  # format of the timestamp
 

@@ -1,9 +1,3 @@
-'''
-This class when
-'''
-
-import os
-import ftplib
 import Settings
 import math
 import sys
@@ -18,7 +12,7 @@ class StationSearcher(FileExplorer.FileExplorer):
         self.latitude = latitude
         self.longitude = longitude
 
-        self.list = self.create_station_list(self.year,self.latitude,self.longitude)
+        self.station_list = self.create_station_list(self.year,self.latitude,self.longitude)
 
     def create_station_list(self,year,latitude,longitude):
         station_list = []

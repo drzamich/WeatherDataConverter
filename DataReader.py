@@ -1,9 +1,4 @@
-import os
-import ftplib
 import Settings
-import math
-import sys
-from pathlib import Path
 import FileExplorer
 
 observed_characteristics = Settings.observedCharacteristics
@@ -28,7 +23,6 @@ class DataReader(FileExplorer.FileExplorer):
             raw_data_set.append(raw_data)
         return raw_data_set
 
-
     def get_raw_data(self,station):
         char_name = station[0]
         char_short = station[1]
@@ -47,7 +41,10 @@ class DataReader(FileExplorer.FileExplorer):
             self.download_file(char_name,filename)
             path = self.generate_dirpath(type='download')+filename
 
-        return self.get_txt_from_zip(path)
+        if Settings.testing_mode:
+            return self.get_txt_as_list('data/testing/'+char_name+'.txt')
+        else:
+            return self.get_txt_from_zip(path)
 
     def strip_other_years(self,year,data_list):
         new_list = []
@@ -55,26 +52,30 @@ class DataReader(FileExplorer.FileExplorer):
             # splitting each line of the file where the semicolon is. also decoding the file from bytes to utf8 format
             # for some reason it is only necessary when the text file is loaded from the zip file
 
-            # if not Settings.testing_mode:  # in the testing mode I use pure txt files (not packed in zip) - no decoding needed
-            line_splitted = line.decode('utf8').split(";")
-            # else:
-            #     line_splitted = line.split(";")
+            if not Settings.testing_mode:  # in the testing mode I use pure txt files (not packed in zip) - no decoding needed
+                line_splitted = line.decode('utf8').split(";")
+            else:
+                line_splitted = line.split(";")
             date = line_splitted[1]
 
             if date.startswith(str(year)):
-                new_list.append(line)
+                newline = []
+                for part in line_splitted:
+                    newline.append(part)
+                newline[1] = date[0:10]  #YYYYmmddHH
+
+                new_list.append(newline)
 
         return new_list
 
     def delete_columns(self,data_list,char_index):
         new_list = []
         for line in data_list:
-            line_splitted = line.decode('utf8').split(";")
             new_list_item = []
-            date = line_splitted[1]
+            date = line[1]
             new_list_item.append(date)
             for index in Settings.observedCharacteristics[char_index][2]:
-                new_list_item.append(line_splitted[index].strip())
+                new_list_item.append(line[index].strip())
 
             new_list.append(new_list_item)
 
