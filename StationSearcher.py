@@ -12,18 +12,17 @@ observed_characteristics = Settings.observedCharacteristics
 
 class StationSearcher:
 
-
     def __init__(self,year,latitude,longitude):
         self.year = year
         self.latitude = latitude
         self.longitude = longitude
 
-        self.create_station_list(self.year,self.latitude,self.longitude)
+        self.list = self.create_station_list(self.year,self.latitude,self.longitude)
 
     def create_station_list(self,year,latitude,longitude):
-        self.year = year
-        self.longitude = longitude
-        self.latitude = latitude
+        # self.year = year
+        # self.longitude = longitude
+        # self.latitude = latitude
         station_list = []
 
         for char in observed_characteristics:
@@ -34,8 +33,6 @@ class StationSearcher:
             combined_list = self.combine_zips_and_characteristics(char_file_converted,zip_list)
             best_station = self.choose_best_station(combined_list,self.year,latitude,longitude)
             station_list.append(best_station)
-
-        print(station_list)
         return station_list
 
     #This function returns the list of files in a directory
@@ -48,7 +45,6 @@ class StationSearcher:
         offline_data = Settings.use_offline_data
 
         files_list = []
-        characteristics_file = []
 
         filename = char_short + '_Stundenwerte_Beschreibung_Stationen.txt'
 
@@ -63,7 +59,7 @@ class StationSearcher:
             path = dirpath + char_name + '/'
 
         if offline_data:
-            files_list = os.listdir(dirpath)
+            files_list = os.listdir(path)
             file = open(path+filename,'r')
             characteristics_file = file.readlines()
             file.close()

@@ -8,7 +8,7 @@ lon = 8.23
 
 
 use_recent_data= 0
-use_offline_data = 0
+use_offline_data = 1
 testing_mode = 1
 
 observedCharacteristics = [

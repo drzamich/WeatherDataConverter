@@ -21,4 +21,5 @@ from Settings import *
 
 import StationSearcher
 
-explo = StationSearcher.StationSearcher(2016, 52.93, 8.23)
+explo = StationSearcher.StationSearcher(2016,52,8)
+print(explo.list)
