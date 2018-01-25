@@ -7,11 +7,21 @@ import zipfile
 dirpath_downloaded = Settings.dirpath_downloaded
 
 class FileExplorer:
+    """
+    This class contains fuctions are are helpful for other classes in managing files and directories
+    """
     offline_data = Settings.use_offline_data
 
     def get_directory_listing(self,char_name,*extensions):
+        """
+        :param char_name: name of the climate element
+        :param extensions: unsorted list of extensions that the user wants to include on the file lsit
+        :return: list of files with *extensions inside the hourly/historical/ folder for climate element
+                given in char_name
+        """
         files_list = []
 
+        #Based on the climate element name, generating path to the directory
         path = self.generate_dirpath(char_name)
 
         if self.offline_data:
@@ -30,6 +40,8 @@ class FileExplorer:
             ls = []
             ftp.retrlines('MLSD', ls.append)  # listing files in the directory
             for line in ls:
+                #directory listing from ftp server contains many information separated with ";"
+                #therefore splitting lines is necessary
                 line_splitted = line.split(';')
                 for item in line_splitted:
                     for ext in extensions:
@@ -42,6 +54,11 @@ class FileExplorer:
         return files_list
 
     def get_txt_from_zip(self,zip_filepath,file_prefix='produkt'):
+        """
+        :param zip_filepath: path to the zip file
+        :param file_prefix: prefix of the txt file inside the zip file that is to be extracted
+        :return: contents of the txt file as list
+        """
         zf = zipfile.ZipFile(zip_filepath)
 
         # looking for txt file which name starts with file_prefix
@@ -53,11 +70,17 @@ class FileExplorer:
         file_data = zf.open(file_data_name)
         zf.close()
 
+        #Returing the contents of txt file as a list
         return file_data.readlines()
 
     def download_file(self,char_name,filename):
+        """
+        :param char_name: name of the climate element
+        :param filename: name of the file that will be downloaded
+        :return: function downloads a file from FTP server and saves it in the data/download folder
+        """
         dirpath_downloaded = Settings.dirpath_downloaded
-        path_downloaded = dirpath_downloaded+'/'+filename
+        path_downloaded = dirpath_downloaded+'/'+filename #path to the downloaded file
 
         #Downloading the fily only if the file wasn't downloaded before
         if not Path(path_downloaded).is_file():
@@ -80,12 +103,23 @@ class FileExplorer:
             ftp.close()
 
     def get_txt_as_list(self,filepath):
+        """
+        :param filepath: path to the txt file
+        :return: contents of the txt file as a list
+        """
         file = open(filepath,'r')
         file_list = file.readlines()
         file.close()
         return file_list
 
     def generate_dirpath(self, char_name='air_temperature', type='repository'):
+        """
+        :param char_name: name of the climate element. default = air_temperature
+        :param type: type of the generated dirpath
+                        - repository: dirpath to the folder contains all the data files on local drive or FTP
+                        - download: dirpath to the folder containing downloaded files
+        :return: path to the folder
+        """
         dirpath_local = Settings.dirpath_offline
         dirpath_ftp = Settings.dirpath_ftp
         dirpath_downloaded = Settings.dirpath_downloaded
@@ -96,6 +130,7 @@ class FileExplorer:
             else:
                 dirpath = dirpath_ftp
 
+            #Exception for solar data
             if char_name != 'solar':
                 path = dirpath + char_name + '/historical/'
             else:
