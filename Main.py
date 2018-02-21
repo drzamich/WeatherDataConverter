@@ -11,16 +11,19 @@ lon = 8.23
 
 if __name__ == '__main__':
     #Calling the StationSearcher constructor using input parameters
+    print('StationSearcher')
     searcher = StationSearcher.StationSearcher(year, lat, lon)
     #Output -  list of 7 stations that are most favourable for given input paramaters, saved in variable station_list
     station_list = searcher.station_list
 
     #Calling the DataReader constructor using previously created station list
+    print('DataReader')
     extractor = DataReader.DataReader(year, station_list)
     #Output - unconverted set of data extracted from zip files in the form of list
     extracted_data = extractor.raw_data_set
 
     #Calling the DataConverter constructor using previously created raw data
+    print('DataConverter')
     convertor = DataConverter.DataConverter(year, extracted_data)
     #Output: converted data with calculated additional values needed in energy analisys programs
     converted_data = convertor.converted_data

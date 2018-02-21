@@ -26,16 +26,41 @@ class DataConverter:
 
     def convert_data(self):
         #Removing duplicated entries (entries with same dates)
+        print('-Remove duplicates')
         self.remove_duplicates()
 
         #Inserting entries for which no entries exist in the original data set (values marked as missing: -999)
+        print('-Insert missing dates')
         self.insert_missing_dates()
 
         #Removing extra entries for leap year (continous set, no gaps!)
+        print('-Strip leap year')
         self.strip_leap_year()
 
+        #Converting and calculating values for temperature and relative humidity
+        print('-Convert air temp data')
+        self.convert_air_temperature_data()
+
+        # Converting and calculating values for pressure
+        print('-Convert pressure data')
+        self.convert_pressure_data()
+
         #Converting and calculating values of irradiance
+        print('-Convert solar data')
         self.convert_solar_data()
+
+        #Converting values of cloudiness from oktas to tenths
+        print('-Convert cloudiness data')
+        self.convert_cloudiness_data()
+
+        print('-Convert wind data')
+        self.convert_wind_data()
+
+        print('-Calculate horizontal infrared')
+        self.calculate_horizontal_infrared()
+
+        print('-Convert soil data')
+        self.convert_soil_data()
 
     def remove_duplicates(self):
         """
@@ -166,10 +191,10 @@ class DataConverter:
         if calendar.isleap(self.year):
             for data_list in self.raw_data:
                 boundary_date = str(self.year) + '022823'  #boundary date is the 23:00 28th Feb
+                tstamp2 = datetime.datetime.strptime(boundary_date, fmt)
                 for item in data_list:
                     date = str(item[0])
                     tstamp1 = datetime.datetime.strptime(date, fmt)
-                    tstamp2 = datetime.datetime.strptime(boundary_date, fmt)
                     if tstamp1 > tstamp2:
                         #for each entry with date after the boundary date
                         #one day is added to the original date, therefore moving all entries one day forward
@@ -180,6 +205,69 @@ class DataConverter:
                 # removing last 24 entires on the data_list, therefore limiting number of entries to 8760
                 for i in range(0, 24):
                     data_list.pop()
+
+    def convert_air_temperature_data(self):
+        air_temp_data_list = self.raw_data[0]
+        for item in air_temp_data_list:
+
+            temp = float(item[1])
+            humidity = int(float(item[2]))
+
+            mark = 0
+            if temp == -999.0 or temp < -70.0 or temp > 70.0:
+                dry_bulb = 99.9
+                mark = 1
+            else:
+                dry_bulb = temp
+
+            if humidity == -999 or humidity < 0 or humidity > 110:
+                rel_humidity = 999
+                mark = 1
+            else:
+                rel_humidity = humidity
+
+            if mark == 1:
+                dew_point = 99.9
+            elif mark == 0:
+                dew_point = self.dew_point_temperature(temp,humidity)
+
+
+            item.append(dry_bulb)       #item[3]
+            item.append(dew_point)      #item[4]
+            item.append(rel_humidity)   #item[5]
+
+    def convert_pressure_data(self):
+        pressure_data = self.raw_data[3]
+        for item in pressure_data:
+            press = int(float(item[2]))*100 #[Pa]
+
+            if press > 120000 or press < 31000 or press == -999:
+                atm_pressure =  999999
+            else:
+                atm_pressure = press
+
+            item.append(atm_pressure)
+
+    def convert_wind_data(self):
+        wind_data = self.raw_data[7]
+        for item in wind_data:
+            speed = float(item[1])
+            speed = int(round(speed,0))
+            dir = int(float(item[2]))
+            dir = int(0.9*dir)  #grad to degree
+
+            if dir <0 or dir >360 or dir == -999:
+                wind_dir = 999
+            else:
+                wind_dir = dir
+
+            if speed < 0 or speed > 40 or speed == -999:
+                wind_speed = 999
+            else:
+                wind_speed = speed
+
+            item.append(wind_dir)
+            item.append(wind_speed)
 
     def convert_solar_data(self):
         """
@@ -194,16 +282,16 @@ class DataConverter:
             #Diffuse horizontal irradiance
             diff_hour = float(item[2])   # J/cm^2*h
             diff_instant = (10000.0/3600.0)*diff_hour  #W/m2
-            diff_instant_str = "{0:.2f}".format(diff_instant)
+            diff_instant = int(round(diff_instant,0))
 
             #Global horizontal irradiance
             glob_hour = float(item[3])    # J/cm^2*h
             glob_instant = (10000.0/3600.0)*glob_hour  #W/m2
-            glob_instant_str = "{0:.2f}".format(glob_instant)
+            glob_instant = int(round(glob_instant,0))
 
             #Adding calculated values to the list
-            item.append(diff_instant_str)   #item[6]
-            item.append(glob_instant_str)   #item[7]
+            item.append(diff_instant)   #item[6]
+            item.append(glob_instant)   #item[7]
 
             #Calculating the direct normal irradiance
             day_of_year = math.ceil(index+1/24.0)
@@ -213,7 +301,147 @@ class DataConverter:
             dir_nor = Irradiance.disc(glob_instant,zenith,day_of_year)
             # the value of direct normal irradiance is saved in the dir_nor table under the key 'dni'
             direct_instant = dir_nor['dni']
-            direct_instant_str = "{0:.2f}".format(direct_instant) #formatting the float number
+            direct_instant = "{0:.2f}".format(direct_instant) #formatting the float number
+            direct_instant = int(round(float(direct_instant),0))
 
             #adding the calculated value to the list
-            item.append(direct_instant_str)
+            item.append(direct_instant) #item[8]
+
+            #When values necessary for calculation are missing from the data set, the calculated values are set as missing
+            if zenith == -999.0 or diff_hour == -999.0 or glob_hour == -999.0:
+                item[6] = 0
+                item[8] = 0
+
+    def convert_cloudiness_data(self):
+        cloudiness_data_list = self.raw_data[1]
+        for item in cloudiness_data_list:
+            okta_value = int(item[1])
+
+            if okta_value == -1 or okta_value == -999:
+                tenth_value = 99 #99 means "missing" for the "Total Sky Cover field"
+            elif okta_value == 0: tenth_value = 0
+            elif okta_value == 1: tenth_value = 1
+            elif okta_value == 2: tenth_value = 2
+            elif okta_value == 3: tenth_value = 4
+            elif okta_value == 4: tenth_value = 5
+            elif okta_value == 5: tenth_value = 6
+            elif okta_value == 6: tenth_value = 7 #7.5?
+            elif okta_value == 7: tenth_value = 9 #9.5?
+            elif okta_value == 8: tenth_value = 10
+
+            item.append(tenth_value)
+
+    def convert_soil_data(self):
+        """
+        This function creates the string with GROUND TEMPERATURES in the .epw file
+        :return:
+        """
+        soil_temperatures = self.raw_data[4]
+
+        #Depths for which ground temperatures are recorded
+        ground_temperatures_depths = [0.02,0.05,0.10,0.20,0.50,1.0]  #m
+        
+        #Other values, left as blanks
+        soil_conductivities = ['','','','','','','']
+        soil_densities = ['','','','','','','']
+        soil_specific_heats = ['','','','','','','']
+
+        #This variable contains numbers of rows containing records from the 1st hour of each month
+        gr_temp_month_begins = [0,744,1416,2160,2880,3624,4344,5088,5832,6552,7296,8016]
+
+        #Defines how missing values will be presented in the .epw file
+        missing_value_mark = ''
+
+        #Calculating ground temperature averages for each month
+        averages_by_month = []
+        for start_index in gr_temp_month_begins:
+            month_averages = []
+            for column in range (1,7):
+                sum = 0
+                count = 0
+                for i in range(0,24):
+                    row = start_index+i
+                    temp = float(soil_temperatures[row][column])
+                    if temp == -999:
+                        continue
+                    else:
+                        count += 1
+                        sum += temp
+
+                if count != 0:
+                    average = sum/count
+                    average = round(average,1)
+                else:
+                    average = missing_value_mark
+
+                month_averages.append(average)
+            averages_by_month.append(month_averages)
+
+        #Sorting temperature averages according to measurement depth
+        averages_by_depth = []
+        for i in range (0,6):
+            average_item = []
+            for month in averages_by_month:
+                average_item.append(month[i])
+            averages_by_depth.append(average_item)
+
+        #Creating the line
+        self.g_text = 'GROUND TEMPERATURES,'+str(len(ground_temperatures_depths))+','
+
+        for index,depth in enumerate(ground_temperatures_depths):
+            self.g_text += str(depth) + ','
+            self.g_text += soil_conductivities[index]+','
+            self.g_text += soil_densities[index] + ','
+            self.g_text += soil_specific_heats[index] + ','
+            for average in averages_by_depth[index]:
+                self.g_text += str(average)  + ','
+
+        #Stripping the last coma
+        self.g_text = self.g_text[:-1]
+
+
+
+    def calculate_horizontal_infrared(self):
+        cloudiness_data = self.raw_data[1]
+        temperature_data = self.raw_data[0]
+        solar_data = self.raw_data[5]
+
+        for index,item in enumerate(cloudiness_data):
+            sky_cover = item[2]
+            dry_bulb = temperature_data[index][3] + 273
+            dew_point = temperature_data[index][4] + 273
+
+            if sky_cover == 99 or dry_bulb == 99.9 or dew_point == 99.9:
+                horizontal_infrared = 9999
+            else:
+                horizontal_infrared = self.horizontal_infrared_intensity(dry_bulb,dew_point,sky_cover)
+
+            solar_data[index].append(horizontal_infrared)
+
+    def dew_point_temperature(self,temp,humidity):
+        """
+        Taken from https://en.wikipedia.org/wiki/Dew_point#Calculating_the_dew_point
+        """
+        a = 6.1121
+        b = 18.678
+        c = 257.14
+        T = temp
+        RH = humidity
+
+        gamma = math.log(RH/100) + ((b*T)/(c+T))
+
+        T_dp = (c*gamma)/(b-gamma)
+        T_dp1 = round(T_dp,1)
+        return T_dp1
+
+    def emissivity(self,dew_point,sky_cover):
+        N = sky_cover
+        e = (0.787+0.764*math.log(dew_point/273))*(1+0.0224*N+0.0035*N*N+0.00028*N*N*N)
+        return e
+
+    def horizontal_infrared_intensity(self,dry_bulb,dew_point,sky_cover):
+        b = 5.6697*10**(-8)
+        e = self.emissivity(dew_point,sky_cover)
+        hor = e*b*dry_bulb**(4)
+        hor = int(round(hor,0))
+        return hor
