@@ -55,6 +55,7 @@ class DataOutputer:
         self.prepare_soil_data()
         self.create_blank_set()
         self.fill_blank_set()
+        self.modify_flags()
         print(self.def_set)
 
     def prepare_soil_data(self):
@@ -148,4 +149,18 @@ class DataOutputer:
 
                 if table_num != 999:
                     self.def_set[index][field_num] = self.prepared_data[table_num][index][column]
+
+    def modify_flags(self):
+        for item in self.def_set:
+            flag = ''
+            for i in range (6,35):
+                #Checking if the value in the set has the default value for the field
+                if item[i] != self.fields[i][2]:
+                    flag += self.fields[i][4]
+                else:
+                    flag += self.fields[i][3]
+                flag += self.fields[i][5]
+            item[5] = flag
+
+
 
