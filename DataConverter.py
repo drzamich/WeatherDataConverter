@@ -335,12 +335,13 @@ class DataConverter:
 
         for index,item in enumerate(cloudiness_data):
             sky_cover = item[2]
-            dry_bulb = temperature_data[index][3] + 273
+            dry_bulb = temperature_data[index][3]
             dew_point = temperature_data[index][4] + 273
 
-            if sky_cover == 99 or dry_bulb == 99.9 or dew_point == 99.9:
+            if sky_cover == 99 or dry_bulb == 99.9 or dry_bulb == '' or dew_point == 99.9:
                 horizontal_infrared = 9999
             else:
+                dry_bulb = temperature_data[index][3] + 273
                 horizontal_infrared = self.horizontal_infrared_intensity(dry_bulb,dew_point,sky_cover)
 
             solar_data[index].append(horizontal_infrared)

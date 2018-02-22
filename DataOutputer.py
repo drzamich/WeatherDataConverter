@@ -3,9 +3,13 @@ class DataOutputer:
     This class, given the prepared sets of climate data, prepares the EPW file
     """
 
-    def __init__(self,prepared_data,station_list):
+    def __init__(self,prepared_data,station_list,year,lon,lat,output_path):
         self.prepared_data = prepared_data
         self.station_list = station_list
+        self.year = year
+        self.lon = str(lon)
+        self.lat = str(lat)
+        self.output_path = output_path
 
         self.def_set = []
 
@@ -44,9 +48,9 @@ class DataOutputer:
             [30, 'Aerosol Optical Depth','.999','?','A','0',999,999],
             [31, 'Snow Depth','999','?','A','0',999,999],
             [32, 'Days Since Last Snowfall','99','?','A','0',999,999],
-            [33, 'Albedo','','','','',999,999],
-            [34, 'Liquid Precipitation Depth','','','','',999,999],
-            [35, 'Liquid Precipitation Quantity','','','','',999,999]
+            [33, 'Albedo','999','','','',999,999],
+            [34, 'Liquid Precipitation Depth','999','','','',999,999],
+            [35, 'Liquid Precipitation Quantity','99','','','',999,999]
         ]
         self.field_number = len(self.fields)
         self.prepare_data()
@@ -56,7 +60,8 @@ class DataOutputer:
         self.create_blank_set()
         self.fill_blank_set()
         self.modify_flags()
-        print(self.def_set)
+        self.prepare_header()
+        self.write_epw_file()
 
     def prepare_soil_data(self):
         """
@@ -162,5 +167,42 @@ class DataOutputer:
                 flag += self.fields[i][5]
             item[5] = flag
 
+    def prepare_header(self):
+        cityname = "Musterstadt"
+        regionname = 'Sachsen'
+        WMO = '123456'
+
+
+        #calculating mean elevation
+        elev = 0
+        for station in self.station_list:
+            elev += float(station[5])
+        elev = str(elev/8)
+
+        header = []
+        header.append('LOCATION,'+cityname+','+regionname+',DEU,DWD,'+WMO+','+self.lat+','+self.lon+',1.0,'+elev)
+        header.append('DESIGN CONDITIONS,0')
+        header.append('TYPICAL/EXTREME PERIODS,0')
+        header.append(self.g_text)
+        header.append('HOLIDAYS/DAYLIGHT SAVINGS,No,0,0,0')
+        header.append('COMMENTS 1, Data set prepared by Weather Data Converter')
+        header.append('COMMENTS 2, Made at TU Dresden')
+        header.append('DATA PERIODS,1,1,Data,Sunday,1/1,12/31')
+
+        self.heading = header
+    def write_epw_file(self):
+        file = open(self.output_path,"w")
+
+        for line in self.heading:
+            file.write(str(line)+'\n')
+
+        for i in range (0,8760):
+            line = ''
+            for item in self.def_set[i]:
+                line += str(item)+','
+            line = line[:-1]
+            file.write(line+'\n')
+
+        file.close()
 
 

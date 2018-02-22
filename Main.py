@@ -57,7 +57,7 @@ if __name__ == '__main__':
     missing_entries_list = convertor.missing_entries_list       #list with number of missing entries
 
     #Writing the EPW file
-    outputer = DataOutputer.DataOutputer(converted_data,station_list)
+    outputer = DataOutputer.DataOutputer(converted_data,station_list,year,lon,lat,'data/epw/Outcome.epw')
 
     #Calling the Reporter class that based on the data generated in steps before, creates report files in the reports/
     #directory
