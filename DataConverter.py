@@ -59,9 +59,6 @@ class DataConverter:
         print('-Calculate horizontal infrared')
         self.calculate_horizontal_infrared()
 
-        print('-Convert soil data')
-        self.convert_soil_data()
-
     def remove_duplicates(self):
         """
         Function responsible for removing duplicated entries (entries with same dates)
@@ -330,76 +327,6 @@ class DataConverter:
             elif okta_value == 8: tenth_value = 10
 
             item.append(tenth_value)
-
-    def convert_soil_data(self):
-        """
-        This function creates the string with GROUND TEMPERATURES in the .epw file
-        :return:
-        """
-        soil_temperatures = self.raw_data[4]
-
-        #Depths for which ground temperatures are recorded
-        ground_temperatures_depths = [0.02,0.05,0.10,0.20,0.50,1.0]  #m
-        
-        #Other values, left as blanks
-        soil_conductivities = ['','','','','','','']
-        soil_densities = ['','','','','','','']
-        soil_specific_heats = ['','','','','','','']
-
-        #This variable contains numbers of rows containing records from the 1st hour of each month
-        gr_temp_month_begins = [0,744,1416,2160,2880,3624,4344,5088,5832,6552,7296,8016]
-
-        #Defines how missing values will be presented in the .epw file
-        missing_value_mark = ''
-
-        #Calculating ground temperature averages for each month
-        averages_by_month = []
-        for start_index in gr_temp_month_begins:
-            month_averages = []
-            for column in range (1,7):
-                sum = 0
-                count = 0
-                for i in range(0,24):
-                    row = start_index+i
-                    temp = float(soil_temperatures[row][column])
-                    if temp == -999:
-                        continue
-                    else:
-                        count += 1
-                        sum += temp
-
-                if count != 0:
-                    average = sum/count
-                    average = round(average,1)
-                else:
-                    average = missing_value_mark
-
-                month_averages.append(average)
-            averages_by_month.append(month_averages)
-
-        #Sorting temperature averages according to measurement depth
-        averages_by_depth = []
-        for i in range (0,6):
-            average_item = []
-            for month in averages_by_month:
-                average_item.append(month[i])
-            averages_by_depth.append(average_item)
-
-        #Creating the line
-        self.g_text = 'GROUND TEMPERATURES,'+str(len(ground_temperatures_depths))+','
-
-        for index,depth in enumerate(ground_temperatures_depths):
-            self.g_text += str(depth) + ','
-            self.g_text += soil_conductivities[index]+','
-            self.g_text += soil_densities[index] + ','
-            self.g_text += soil_specific_heats[index] + ','
-            for average in averages_by_depth[index]:
-                self.g_text += str(average)  + ','
-
-        #Stripping the last coma
-        self.g_text = self.g_text[:-1]
-
-
 
     def calculate_horizontal_infrared(self):
         cloudiness_data = self.raw_data[1]
