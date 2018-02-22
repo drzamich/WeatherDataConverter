@@ -1,4 +1,4 @@
-
+Test.py
 # Created by https://www.gitignore.io/api/python,pycharm
 
 ### PyCharm ###
@@ -174,8 +174,9 @@ venv.bak/
 data/
 .idea/
 
+SampleExtractor.py
 lala.txt
 report.txt
 reports/
 Sandbox.py
-SampleExtractor.py
+Test.py
