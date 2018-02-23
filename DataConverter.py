@@ -3,6 +3,7 @@ import datetime
 import calendar
 import Irradiance
 import math
+import pickle
 
 fmt = Settings.fmt
 
@@ -21,21 +22,40 @@ class DataConverter:
         self.missing_list =[]           #list that contains data periods missing from raw data sets
         self.missing_entries_list = []  #list that contains numbers of entries missing from raw data sets
         self.convert_data()
+        # self.calculate_data()
         self.converted_data = self.raw_data
 
 
     def convert_data(self):
         #Removing duplicated entries (entries with same dates)
-        print('-Remove duplicates')
-        self.remove_duplicates()
+        # print('-Remove duplicates')
+        # self.remove_duplicates()
 
         #Inserting entries for which no entries exist in the original data set (values marked as missing: -999)
-        print('-Insert missing dates')
-        self.insert_missing_dates()
+        # print('-Insert missing dates')
+        # self.insert_missing_dates()
+
+        # all = [self.missing_list, self.missing_entries_list, self.raw_data]
+        # pickle_out = open("data/serialization/raw_data.pickle", "wb")
+        # pickle.dump(all, pickle_out)
+        # pickle_out.close()
+
+        pickle_in=open("data/serialization/raw_data.pickle","rb")
+        all = pickle.load(pickle_in)
+        self.missing_list = all[0]
+        self.missing_entries_list = all[1]
+        self.raw_data = all[2]
+        pickle_in.close()
+
+        print('-Interpolate data')
+        self.interpolate_data()
 
         #Removing extra entries for leap year (continous set, no gaps!)
-        print('-Strip leap year')
-        self.strip_leap_year()
+        # print('-Strip leap year')
+        # self.strip_leap_year()
+
+
+    def calculate_data(self):
 
         #Converting and calculating values for temperature and relative humidity
         print('-Convert air temp data')
@@ -58,6 +78,7 @@ class DataConverter:
 
         print('-Calculate horizontal infrared')
         self.calculate_horizontal_infrared()
+
 
     def remove_duplicates(self):
         """
@@ -97,7 +118,7 @@ class DataConverter:
                                                     #stores the date set to -999 (marked as missing)
 
                         #Saving in the list with missing time ranges infromation about the time range
-                        missing_list_entry.append('before')
+                        missing_list_entry.append('before:')
                         missing_list_entry.append(data_list[0][0])
 
                         #Inserting the date of 1th Jan of given year to the new entry in the 1st column
@@ -176,6 +197,36 @@ class DataConverter:
 
             self.missing_entries_list.append(missing_entries)
             self.missing_list.append(missing_list_entry)
+
+    def interpolate_data(self):
+        for index,data in enumerate(self.raw_data):
+            missing_list = self.missing_list[index]
+            m_list_len = len(missing_list)
+
+            before = ''
+            after = ''
+
+            if(m_list_len>0):
+                if str(missing_list[0]) == 'before:':
+                    before = str(missing_list[1])
+                if m_list_len > 2 and str(missing_list[m_list_len-2]) == 'after:':
+                    after = str(missing_list[m_list_len-1])
+
+            #for air temp, rel humidity, soil temperature and solar data, interpolation is made based
+            #on the values from neighbouring days
+            if index == 0 or index == 4 or index == 5:
+                self.interpolate_by_average(data,missing_list,before,after)
+
+            #for cloudiness, precipitation, pressure and wind data, intepolation is made direcly based on the values
+            #nearest to the missing data
+            elif index == 1 or index == 2 or index == 3 or index == 7:
+                self.interpolate_directly(data,missing_list,before,after)
+
+    def interpolate_by_average(self,data,missing_list,before,after):
+        pass
+
+    def interpolate_by_directly(self,data,missing_list,before,after):
+        pass
 
     def strip_leap_year(self):
         """
