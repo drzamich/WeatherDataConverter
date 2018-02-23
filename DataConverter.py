@@ -27,18 +27,18 @@ class DataConverter:
 
 
     def convert_data(self):
-        # #Removing duplicated entries (entries with same dates)
-        # print('-Remove duplicates')
-        # self.remove_duplicates()
-        #
-        # #Inserting entries for which no entries exist in the original data set (values marked as missing: -999)
-        # print('-Insert missing dates')
-        # self.insert_missing_dates()
-        #
-        # all = [self.missing_list, self.missing_entries_list, self.raw_data]
-        # pickle_out = open("data/serialization/raw_data.pickle", "wb")
-        # pickle.dump(all, pickle_out)
-        # pickle_out.close()
+        #Removing duplicated entries (entries with same dates)
+        print('-Remove duplicates')
+        self.remove_duplicates()
+
+        #Inserting entries for which no entries exist in the original data set (values marked as missing: -999)
+        print('-Insert missing dates')
+        self.insert_missing_dates()
+
+        all = [self.missing_list, self.missing_entries_list, self.raw_data]
+        pickle_out = open("data/serialization/raw_data.pickle", "wb")
+        pickle.dump(all, pickle_out)
+        pickle_out.close()
 
         pickle_in=open("data/serialization/raw_data.pickle","rb")
         all = pickle.load(pickle_in)
@@ -216,18 +216,50 @@ class DataConverter:
 
             #for air temp, rel humidity, soil temperature and solar data, interpolation is made based
             #on the values from neighbouring days
-            if index == 99 or index == 4 or index == 5:
+            if index == 99 or index == 4 or index == 5 or index==0:
                 self.interpolate_by_average(data,missing_values)
 
             #for cloudiness, precipitation, pressure and wind data, intepolation is made direcly based on the values
             #nearest to the missing data
-            elif index== 0:
-                self.interpolate_directly(data,missing_values)
+            # elif index== 0:
+            #     self.interpolate_directly(data,missing_values)
             # elif index == 1 or index == 2 or index == 3 or index == 7 or index== 0:
             #     self.interpolate_directly(data,missing_list,before,after)
 
-    def interpolate_by_average(self,data,missing_list):
-        pass
+            break
+
+    def interpolate_by_average(self,data,missing_values):
+        for column, set in enumerate(missing_values):
+            for index in set:
+                #looking for indexes of entries with available data, which will be a base for interpolation
+                lower_index = -1
+                upper_index = 9999
+
+                for j in range(index-24,-1,-24):
+                    if j not in set:
+                        lower_index = j
+                        break
+
+                for j in range(index+24,len(data),24):
+                    if j not in set:
+                        upper_index = j
+                        break
+
+                #set consiss all of missing values
+                if lower_index == 9999 and upper_index == -1:
+                    break
+
+                #missing values at the start of set
+                elif lower_index == -1 and upper_index != 9999:
+                    data[index][column] = data[upper_index][column]
+
+                #missing values at the end of the set
+                elif lower_index != -1 and upper_index == 9999:
+                    data[index][column] = data[lower_index][column]
+
+                else:
+                    data[index][column] = (float(data[upper_index][column]) + float(data[lower_index][column]))/2
+
 
     def interpolate_directly(self,data,missing_values):
 
@@ -254,15 +286,11 @@ class DataConverter:
 
                 #missing values at the start of set
                 elif lower_index == -1 and upper_index != 9999:
-                    val = data[upper_index][column]
-                    for i in range (upper_index-1,-1,-1):
-                        data[i][column]=val
+                    data[index][column] = data[upper_index][column]
 
                 #missing values at the end of the set
                 elif lower_index != -1 and upper_index == 9999:
-                    val = data[lower_index][column]
-                    for i in range(lower_index+1,len(data)):
-                        data[i][column] = val
+                    data[index][column] = data[lower_index][column]
 
                 else:
                     lower_val = float(data[lower_index][column])

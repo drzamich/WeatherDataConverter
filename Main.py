@@ -16,26 +16,26 @@ serialization = 0
 if __name__ == '__main__':
 
     if not serialization:
-        # # Calling the StationSearcher constructor using input parameters
-        # print('StationSearcher')
-        # searcher = StationSearcher.StationSearcher(year, lat, lon)
-        # #Output -  list of 7 stations that are most favourable for given input paramaters, saved in variable station_list
-        # station_list = searcher.station_list
-        #
-        # #Calling the DataReader constructor using previously created station list
-        # print('DataReader')
-        # extractor = DataReader.DataReader(year, station_list)
-        # #Output - unconverted set of data extracted from zip files in the form of list
-        # extracted_data = extractor.raw_data_set
-        #
-        #
-        # pickle_out = open("data/serialization/station_list.pickle", "wb")
-        # pickle.dump(station_list, pickle_out)
-        # pickle_out.close()
-        #
-        # pickle_out = open("data/serialization/extracted.pickle", "wb")
-        # pickle.dump(extracted_data, pickle_out)
-        # pickle_out.close()
+        # Calling the StationSearcher constructor using input parameters
+        print('StationSearcher')
+        searcher = StationSearcher.StationSearcher(year, lat, lon)
+        #Output -  list of 7 stations that are most favourable for given input paramaters, saved in variable station_list
+        station_list = searcher.station_list
+
+        #Calling the DataReader constructor using previously created station list
+        print('DataReader')
+        extractor = DataReader.DataReader(year, station_list)
+        #Output - unconverted set of data extracted from zip files in the form of list
+        extracted_data = extractor.raw_data_set
+
+
+        pickle_out = open("data/serialization/station_list.pickle", "wb")
+        pickle.dump(station_list, pickle_out)
+        pickle_out.close()
+
+        pickle_out = open("data/serialization/extracted.pickle", "wb")
+        pickle.dump(extracted_data, pickle_out)
+        pickle_out.close()
 
 
         # -------------------------
