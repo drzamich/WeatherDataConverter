@@ -22,7 +22,7 @@ class DataConverter:
         self.missing_list =[]           #list that contains data periods missing from raw data sets
         self.missing_entries_list = []  #list that contains numbers of entries missing from raw data sets
         self.convert_data()
-        # self.calculate_data()
+        self.calculate_data()
         self.converted_data = self.raw_data
 
 
@@ -35,24 +35,12 @@ class DataConverter:
         print('-Insert missing dates')
         self.insert_missing_dates()
 
-        all = [self.missing_list, self.missing_entries_list, self.raw_data]
-        pickle_out = open("data/serialization/raw_data.pickle", "wb")
-        pickle.dump(all, pickle_out)
-        pickle_out.close()
-
-        pickle_in=open("data/serialization/raw_data.pickle","rb")
-        all = pickle.load(pickle_in)
-        self.missing_list = all[0]
-        self.missing_entries_list = all[1]
-        self.raw_data = all[2]
-        pickle_in.close()
-
         print('-Interpolate data')
         self.interpolate_data()
 
         #Removing extra entries for leap year (continous set, no gaps!)
-        # print('-Strip leap year')
-        # self.strip_leap_year()
+        print('-Strip leap year')
+        self.strip_leap_year()
 
 
     def calculate_data(self):
@@ -216,17 +204,14 @@ class DataConverter:
 
             #for air temp, rel humidity, soil temperature and solar data, interpolation is made based
             #on the values from neighbouring days
-            if index == 99 or index == 4 or index == 5 or index==0:
+            if index==0:
                 self.interpolate_by_average(data,missing_values)
 
             #for cloudiness, precipitation, pressure and wind data, intepolation is made direcly based on the values
             #nearest to the missing data
-            # elif index== 0:
-            #     self.interpolate_directly(data,missing_values)
-            # elif index == 1 or index == 2 or index == 3 or index == 7 or index== 0:
-            #     self.interpolate_directly(data,missing_list,before,after)
+            elif index== 3:
+                self.interpolate_directly(data,missing_values)
 
-            break
 
     def interpolate_by_average(self,data,missing_values):
         for column, set in enumerate(missing_values):
