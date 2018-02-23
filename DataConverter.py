@@ -27,14 +27,14 @@ class DataConverter:
 
 
     def convert_data(self):
-        #Removing duplicated entries (entries with same dates)
+        # #Removing duplicated entries (entries with same dates)
         # print('-Remove duplicates')
         # self.remove_duplicates()
-
-        #Inserting entries for which no entries exist in the original data set (values marked as missing: -999)
+        #
+        # #Inserting entries for which no entries exist in the original data set (values marked as missing: -999)
         # print('-Insert missing dates')
         # self.insert_missing_dates()
-
+        #
         # all = [self.missing_list, self.missing_entries_list, self.raw_data]
         # pickle_out = open("data/serialization/raw_data.pickle", "wb")
         # pickle.dump(all, pickle_out)
@@ -200,101 +200,84 @@ class DataConverter:
 
     def interpolate_data(self):
         for index,data in enumerate(self.raw_data):
-            missing_list = self.missing_list[index]
-            m_list_len = len(missing_list)
 
-            before = ''
-            after = ''
+            #Saving indexes of rows with missing data
+            #This is done for each column separately
+            missing_values = [[]]
+            for i, row in enumerate(data):
+                for column, item in enumerate(row):
+                    if float(item) == -999.0:
+                        if len(missing_values) == column:
+                            missing_values.append([i])
 
-            if(m_list_len>0):
-                if str(missing_list[0]) == 'before:':
-                    before = str(missing_list[1])
-                if m_list_len > 2 and str(missing_list[m_list_len-2]) == 'after:':
-                    after = str(missing_list[m_list_len-1])
+                        elif len(missing_values) > column:
+                            missing_values[column].append(i)
+
 
             #for air temp, rel humidity, soil temperature and solar data, interpolation is made based
             #on the values from neighbouring days
             if index == 99 or index == 4 or index == 5:
-                self.interpolate_by_average(data,missing_list,before,after)
+                self.interpolate_by_average(data,missing_values)
 
             #for cloudiness, precipitation, pressure and wind data, intepolation is made direcly based on the values
             #nearest to the missing data
             elif index== 0:
-                self.interpolate_directly(data,missing_list,before,after)
+                self.interpolate_directly(data,missing_values)
             # elif index == 1 or index == 2 or index == 3 or index == 7 or index== 0:
             #     self.interpolate_directly(data,missing_list,before,after)
 
-    def interpolate_by_average(self,data,missing_list,before,after):
+    def interpolate_by_average(self,data,missing_list):
         pass
 
-    def interpolate_directly(self,data,missing_list_org,before,after):
-        missing_list = missing_list_org.copy()
-        if before != '':
-            for i,row in enumerate(data):
-                if str(row[0]) == before:
-                    before_index = i
-                    before_row = row
+    def interpolate_directly(self,data,missing_values):
+
+        for column,set in enumerate(missing_values):
+            for index in set:
+
+                #looking for indexes of entries with available data, which will be a base for interpolation
+                lower_index = -1
+                upper_index = 9999
+
+                for j in range(index-1,-1,-1):
+                    if j not in set:
+                        lower_index = j
+                        break
+
+                for j in range(index, len(data)):
+                    if j not in set:
+                        upper_index = j
+                        break
+
+                #set consiss all of missing values
+                if lower_index == 9999 and upper_index == -1:
                     break
-            for i in range(0,before_index):
-                for j,piece in enumerate(data[i]):
-                    if j != 0:
-                        data[i][j] = before_row[j]
-            missing_list.pop(0)
-            missing_list.pop(0)
-            missing_list.pop(0)
 
-        if after != '':
-            for i,row in enumerate(data):
-                if str(row[0]) == after:
-                    after_index = i
-                    after_row = row
-                    break
-            for i in range(after_index+1, len(data)):
-                for j, piece in enumerate(data[i]):
-                    if j != 0:
-                        data[i][j] = after_row[j]
-            missing_list.pop(len(missing_list)-1)
-            missing_list.pop(len(missing_list)-1)
+                #missing values at the start of set
+                elif lower_index == -1 and upper_index != 9999:
+                    val = data[upper_index][column]
+                    for i in range (upper_index-1,-1,-1):
+                        data[i][column]=val
 
-        # missing_values = [[]]*len(data[0])
-        # print(missing_values)
-        missing_values = [[]]
-        for index,row in enumerate(data):
-            for column, item in enumerate(row):
-                if float(item) == -999.0:
-                    if len(missing_values)==column:
-                        missing_values.append([index])
+                #missing values at the end of the set
+                elif lower_index != -1 and upper_index == 9999:
+                    val = data[lower_index][column]
+                    for i in range(lower_index+1,len(data)):
+                        data[i][column] = val
 
-                    elif len(missing_values)>column:
-                        missing_values[column].append(index)
+                else:
+                    lower_val = float(data[lower_index][column])
+                    upper_val = float(data[upper_index][column])
+                    diff = upper_val-lower_val
 
-        print(missing_values)
+                    width = upper_index - lower_index
+                    distance = index - lower_index
 
+                    incr = diff/width
 
-        # for period in missing_list:
-        #     start = period[0]
-        #     end = period[1]
-        #     for i,row in enumerate(data):
-        #         if row[0] == start:
-        #             start_index = i
-        #             start_row = row
-        #         if row[0] == end:
-        #             end_index = i
-        #             end_row = row
-        #     missing_quantity = end_index-start_index-1
-        #     incr = []
-        #     for i in range (1,len(data[0])):
-        #         incr_elem = (float(data[end_index][i])-float(data[start_index][i]))/(missing_quantity+1)
-        #         incr.append(incr_elem)
-        #     print(incr)
-        #
-        #     for i in range(start_index+1,end_index):
-        #         a=1
-        #         for j in range(1,len(data[0])):
-        #             new = float(data[start_index][j])+incr[j-1]*a
-        #             new = format(new, '.1f')
-        #             data[i][j] = str(new)
-        #         a += 1
+                    new_val = lower_val+incr*distance
+                    new_val = format(new_val,'.1f')
+                    data[index][column] = new_val
+
 
     def strip_leap_year(self):
         """
