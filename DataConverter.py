@@ -1,9 +1,10 @@
-import Settings
 import datetime
 import calendar
 import Irradiance
 import math
-import pickle
+import copy
+import Settings
+import Reporter
 
 fmt = Settings.fmt
 
@@ -12,21 +13,24 @@ class DataConverter:
     This clas is responsible for converting raw weater data set and calculating new values therefore preparing
     them for saving in the output file.
     """
-    def __init__(self,year,raw_data):
+    def __init__(self):
         """
         :param year: year for which the weather data is needed
         :param raw_data: set of raw data sets
         """
-        self.raw_data = raw_data
-        self.year = year
+        print('DataConverter')
+        self.converted_data = copy.deepcopy(Reporter.extracted_data)
+        self.year = Settings.year
         self.missing_list =[]           #list that contains data periods missing from raw data sets
         self.missing_entries_list = []  #list that contains numbers of entries missing from raw data sets
-        self.convert_data()
+        self.prepare_data()
         self.calculate_data()
-        self.converted_data = self.raw_data
 
+        Reporter.converted_data = self.converted_data
+        Reporter.missing_list = self.missing_list
+        Reporter.missing_entries_list = self.missing_entries_list
 
-    def convert_data(self):
+    def prepare_data(self):
         #Removing duplicated entries (entries with same dates)
         print('-Remove duplicates')
         self.remove_duplicates()
@@ -34,6 +38,8 @@ class DataConverter:
         #Inserting entries for which no entries exist in the original data set (values marked as missing: -999)
         print('-Insert missing dates')
         self.insert_missing_dates()
+
+        Reporter.extracted_data = copy.deepcopy(self.converted_data)
 
         print('-Interpolate data')
         self.interpolate_data()
@@ -73,7 +79,7 @@ class DataConverter:
         Function responsible for removing duplicated entries (entries with same dates)
         :return: data set with only one entry per hour
         """
-        for data_list in self.raw_data:
+        for data_list in self.converted_data:
             for index, item in enumerate(data_list):
                 if index != 0:
                     date1 = data_list[index - 1][0]
@@ -89,7 +95,7 @@ class DataConverter:
         (values marked as missing: -999)
         :return: data set with continous entries (there exist an entry for each hour of the year)
         """
-        for data_list in self.raw_data:
+        for data_list in self.converted_data:
             missing_list_entry = []  #list for storing missing entries' time periods
             missing_entries = 0      #variable for stroring number of missing entries
             size = len(data_list[0]) #number of columns in the data set
@@ -187,7 +193,7 @@ class DataConverter:
             self.missing_list.append(missing_list_entry)
 
     def interpolate_data(self):
-        for index,data in enumerate(self.raw_data):
+        for index,data in enumerate(self.converted_data):
 
             #Saving indexes of rows with missing data
             #This is done for each column separately
@@ -204,12 +210,12 @@ class DataConverter:
 
             #for air temp, rel humidity, soil temperature and solar data, interpolation is made based
             #on the values from neighbouring days
-            if index==0:
+            if index==0 or index==4 or index==5:
                 self.interpolate_by_average(data,missing_values)
 
             #for cloudiness, precipitation, pressure and wind data, intepolation is made direcly based on the values
             #nearest to the missing data
-            elif index== 3:
+            elif index == 2 or index== 3 or index == 6 or index == 7:
                 self.interpolate_directly(data,missing_values)
 
 
@@ -231,7 +237,7 @@ class DataConverter:
                         break
 
                 #set consiss all of missing values
-                if lower_index == 9999 and upper_index == -1:
+                if lower_index == -1 and upper_index == 9999:
                     break
 
                 #missing values at the start of set
@@ -242,6 +248,7 @@ class DataConverter:
                 elif lower_index != -1 and upper_index == 9999:
                     data[index][column] = data[lower_index][column]
 
+                #missing values in the middle of the set
                 else:
                     data[index][column] = (float(data[upper_index][column]) + float(data[lower_index][column]))/2
 
@@ -266,7 +273,7 @@ class DataConverter:
                         break
 
                 #set consiss all of missing values
-                if lower_index == 9999 and upper_index == -1:
+                if lower_index == -1 and upper_index == 9999:
                     break
 
                 #missing values at the start of set
@@ -277,6 +284,7 @@ class DataConverter:
                 elif lower_index != -1 and upper_index == 9999:
                     data[index][column] = data[lower_index][column]
 
+                #missing values in the middle of the set
                 else:
                     lower_val = float(data[lower_index][column])
                     upper_val = float(data[upper_index][column])
@@ -301,7 +309,7 @@ class DataConverter:
                     data set with 8760 (365*24) entries
         """
         if calendar.isleap(self.year):
-            for data_list in self.raw_data:
+            for data_list in self.converted_data:
                 boundary_date = str(self.year) + '022823'  #boundary date is the 23:00 28th Feb
                 tstamp2 = datetime.datetime.strptime(boundary_date, fmt)
                 for item in data_list:
@@ -319,7 +327,7 @@ class DataConverter:
                     data_list.pop()
 
     def convert_air_temperature_data(self):
-        air_temp_data_list = self.raw_data[0]
+        air_temp_data_list = self.converted_data[0]
         for item in air_temp_data_list:
 
             temp = float(item[1])
@@ -349,7 +357,7 @@ class DataConverter:
             item.append(rel_humidity)   #item[5]
 
     def convert_pressure_data(self):
-        pressure_data = self.raw_data[3]
+        pressure_data = self.converted_data[3]
         for item in pressure_data:
             press = int(float(item[2]))*100 #[Pa]
 
@@ -361,7 +369,7 @@ class DataConverter:
             item.append(atm_pressure)
 
     def convert_wind_data(self):
-        wind_data = self.raw_data[7]
+        wind_data = self.converted_data[7]
         for item in wind_data:
             speed = float(item[1])
             speed = int(round(speed,0))
@@ -386,7 +394,7 @@ class DataConverter:
         Function responsible for calculating values regarding solar irradiance
         :return: data set with calculated additional values
         """
-        solar_data_list = self.raw_data[5]
+        solar_data_list = self.converted_data[5]
         for index,item in enumerate(solar_data_list):
             # Calculating the global and diffuse horizontal radiation values in W/m2
             #The original unit is J/cm^2*h
@@ -425,7 +433,7 @@ class DataConverter:
                 item[8] = 0
 
     def convert_cloudiness_data(self):
-        cloudiness_data_list = self.raw_data[1]
+        cloudiness_data_list = self.converted_data[1]
         for item in cloudiness_data_list:
             okta_value = int(item[1])
 
@@ -444,9 +452,9 @@ class DataConverter:
             item.append(tenth_value)
 
     def calculate_horizontal_infrared(self):
-        cloudiness_data = self.raw_data[1]
-        temperature_data = self.raw_data[0]
-        solar_data = self.raw_data[5]
+        cloudiness_data = self.converted_data[1]
+        temperature_data = self.converted_data[0]
+        solar_data = self.converted_data[5]
 
         for index,item in enumerate(cloudiness_data):
             sky_cover = item[2]

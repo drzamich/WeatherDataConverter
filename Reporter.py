@@ -3,34 +3,44 @@ import Settings
 import os
 import datetime
 
+
+station_list = []
+extracted_data = []
+converted_data = []
+missing_list = []
+missing_entries_list = []
+
 class Reporter:
 
-    def __init__(self, year, lon, lat, station_list, missing_dates, missing_entries, data_list):
-        self.year = year
-        self.lon = lon
-        self.lat = lat
+    def __init__(self):
+        print('Reporter')
+        self.year = Settings.year
+        self.lon = Settings.lon
+        self.lat = Settings.lat
+
+
         self.station_list = station_list
-        self.missing_dates = missing_dates
-        self.missing_entries = missing_entries
-        self.data_list = data_list
+        self.missing_dates = missing_list
+        self.missing_entries = missing_entries_list
+        self.extracted_data = extracted_data
+        self.converted_data = converted_data
 
+        self.create_folder()
         self.generate_report()
+        self.save_missing_values()
+        self.save_converted_data()
+        self.save_extracted_data()
 
-    def generate_report(self):
 
-        #Checking if the reports/ folder exists. If not, creating it
-        if not os.path.isdir('reports/'):
-            os.mkdir('reports/')
-
-        # Creating new folder with the name of current timestamp in the reports/ directory
+    def create_folder(self):
         current_date_ts = datetime.datetime.now()
         current_date = current_date_ts.strftime('%Y%m%d - %H%M%S')
+        self.dirpath = 'reports/' + current_date + '/'
+        os.mkdir(self.dirpath)
+        os.mkdir(self.dirpath+'converted_data/')
+        os.mkdir(self.dirpath + 'raw_data/')
 
-        dirpath = 'reports/' + current_date + '/'
-        if not os.path.isdir(dirpath):
-            os.mkdir(dirpath)
-            # os.mkdir(dirpath + 'therakles/')
-
+    def generate_report(self):
         #Using the imported PrettyTable class, creating a table to present the list of stations choosen for the
         #data extraction
         table = PrettyTable(['Char', 'Short', 'ID', 'DateStart', 'DateEnd', 'Elev.', 'Lat.', 'Lon.', 'City', 'Bundesland'])
@@ -45,7 +55,7 @@ class Reporter:
         +'List of most favourable weather stations: \n')
 
         #Saving the report text and table with stations in the file 00_report.txt
-        f = open(dirpath+'00_report.txt','a')
+        f = open(self.dirpath+'00_report.txt','a')
         f.write(report_text)
         f.write(str(table))
 
@@ -56,8 +66,9 @@ class Reporter:
             f.write(report_text)
         f.close()
 
+    def save_missing_values(self):
         #Writing in the 00_missing_values.txt file, all the time periods with missing entries in the original data set
-        f = open(dirpath + '00_missing_values.txt', 'a')
+        f = open(self.dirpath + '00_missing_values.txt', 'a')
 
         for index,list in enumerate(self.missing_dates):
             f.write(Settings.observedCharacteristics[index][0]+'\n')
@@ -66,12 +77,51 @@ class Reporter:
             f.write('\n')
         f.close()
 
-        #Creating a txt file for each data element that contains all the values extracted and later calculated in the
-        #course of running the program
-        for index,station in enumerate(self.station_list):
+
+    def save_converted_data_table(self):
+        for index, station in enumerate(self.station_list):
             char_name = station[0]
-            filepath = dirpath + char_name+'.txt'
+
+            table = PrettyTable(Settings.headers_converted_data[index])
+            for entry in self.converted_data[index]:
+                table.add_row(entry)
+
+            filepath = self.dirpath + 'converted_data/'+char_name+'.txt'
             f = open(filepath,'a')
-            for entry in self.data_list[index]:
+            f.write(str(table))
+            f.close()
+
+
+    def save_extracted_data_table(self):
+        for index, station in enumerate(self.station_list):
+            char_name = station[0]
+
+            table = PrettyTable(Settings.headers_raw_data[index])
+
+            for entry in self.extracted_data[index]:
+                table.add_row(entry)
+
+            filepath = self.dirpath + '/raw_data/' + char_name + '.txt'
+            f = open(filepath, 'a')
+            f.write(str(table))
+            f.close()
+
+    def save_converted_data(self):
+        for index, station in enumerate(self.station_list):
+            char_name = station[0]
+
+            filepath = self.dirpath + 'converted_data/' + char_name + '.txt'
+            f = open(filepath, 'a')
+            for entry in self.converted_data[index]:
                 f.write(str(entry)+'\n')
+            f.close()
+
+    def save_extracted_data(self):
+        for index, station in enumerate(self.station_list):
+            char_name = station[0]
+
+            filepath = self.dirpath + 'raw_data/' + char_name + '.txt'
+            f = open(filepath, 'a')
+            for entry in self.extracted_data[index]:
+                f.write(str(entry) + '\n')
             f.close()

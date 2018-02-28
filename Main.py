@@ -1,46 +1,32 @@
+import Preparator
 import StationSearcher
 import DataReader
 import DataConverter
-import Reporter
 import DataOutputer
-import pickle
+import Reporter
 
-#Defining input parameters for extracting weather data
-#In the later version of the program this will be done in the user interface
-year = 2016
-lat = 52.93
-lon = 8.23
-
-serialization = 0
 
 if __name__ == '__main__':
+    #Preparing files
+    Preparator.Preparator()
 
     # Calling the StationSearcher constructor using input parameters
-    print('StationSearcher')
-    searcher = StationSearcher.StationSearcher(year, lat, lon)
-    #Output -  list of 7 stations that are most favourable for given input paramaters, saved in variable station_list
-    station_list = searcher.station_list
+    # Output -  list of 7 stations that are most favourable for given input paramaters, saved in variable station_list
+    StationSearcher.StationSearcher()
 
-    #Calling the DataReader constructor using previously created station list
-    print('DataReader')
-    extractor = DataReader.DataReader(year, station_list)
-    #Output - unconverted set of data extracted from zip files in the form of list
-    extracted_data = extractor.raw_data_set
+    # Calling the DataReader constructor using previously created station list
+    # Output - unconverted set of data extracted from zip files in the form of list
+    DataReader.DataReader()
 
     #Calling the DataConverter constructor using previously created raw data
-    print('DataConverter')
-    convertor = DataConverter.DataConverter(year, extracted_data)
-
     #Output: converted data with calculated additional values needed in energy analisys programs
-    converted_data = convertor.converted_data
     #Additionally, periods with missing entries in the original data set as well as number of those enries are saved
-    missing_list = convertor.missing_list                       #list with missing periods
-    missing_entries_list = convertor.missing_entries_list       #list with number of missing entries
+    DataConverter.DataConverter()
 
+    # print(Reporter.station_list)
     #Writing the EPW file
-    outputer = DataOutputer.DataOutputer(converted_data,station_list,year,lon,lat,'data/epw/Outcome.epw')
+    DataOutputer.DataOutputer()
 
     #Calling the Reporter class that based on the data generated in steps before, creates report files in the reports/
     #directory
-    reporter = Reporter.Reporter(year, lon, lat, station_list, missing_list, missing_entries_list,
-                             converted_data)
+    Reporter.Reporter()

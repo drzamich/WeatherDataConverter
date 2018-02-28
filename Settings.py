@@ -52,5 +52,42 @@ dirpath_downloaded = 'data/download/'
 #Format of the timestamp used in the program (based on the format used in the weather data)
 fmt = '%Y%m%d%H'
 
+#Minimum number of data records in the given year (maximum 24*366 = 8784) for which the
+#data set is perceived as valid. If the station provides us with the data set with lower number of records
+#for the given year, it's perceivd as invalid and added to the "forbidden" list
+min_rec = 3000
+
+#Output path for .epw file
+output_path = 'output/Output.epw'
 
 
+#Input parameters
+year = 2016
+lat = 50.91
+lon = 13.34
+
+
+headers_raw_data = [
+    ['Date','Air Temp. [*C]','Rel. humid. [%]'],
+    ['Date','Total cloud cover [1/8]'],
+    ['Date','Hrly precipitation height [mm]'],
+    ['Date','Mean sea level pressure [hPa]','Pressure at station height [hPa]'],
+    ['Date','T at depth [*C]: 2 cm','5 cm','10 cm','20 cm','50 cm','100 cm'],
+    ['Date','Hrly longwave dwnwrd rad. [J/cm2]','Hrly diff solar rad. [J/cm2]','Hrly solar incoming rad. [J/cm2]',
+     'Sunshine duration [min]','Zenith angle [*]'],
+    ['Date','Sunshine duration [min]'],
+    ['Date','Wind speed [m/s]','Wind direction [Grad]']
+]
+
+headers_converted_data = [
+    ['Date','(r)Air Temp. [*C]','(r)Rel. humid. [%]','Dry Bulb Temp. [*C]','Dew Point Temp [*C]', 'Rel. Humid. [%]'],
+    ['Date','(r)Total cloud cover [1/8]','Total Sky Cover [1/10]'],
+    ['Date','(r)Hrly precipitation height [mm]'],
+    ['Date','(r)Mean sea level pressure [hPa]','(r)Pressure at station height [hPa]','Atmosphetic Station Pressure [Pa]'],
+    ['Date','(r)T at depth [*C]: 2 cm','(r)5 cm','(r)10 cm','(r)20 cm','(r)50 cm','(r)100 cm'],
+    ['Date','(r)Hrly longwave dwnwrd rad. [J/cm2]','(r)Hrly diff solar rad. [J/cm2]','(r)Hrly solar incoming rad. [J/cm2]',
+     '(r)Sunshine duration [min]','(r)Zenith angle [*]','Diff. Horiz. Irrad. [W/m2]','Glob. Horiz. Irrad. [W/m2]',
+     'Dir. Norm. Irrad. [W/m2]','Horiz. Infrared Radiat. Intens. [W/m2]'],
+    ['Date','(r)Sunshine duration [min]'],
+    ['Date','(r)Wind speed [m/s]','(r)Wind direction [Grad]','Wind Direction [*]','Wind Speed [m/s]']
+]

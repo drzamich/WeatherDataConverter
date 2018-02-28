@@ -1,11 +1,16 @@
 import Settings
 import FileExplorer
+import pickle
+from pathlib import Path
+import StationSearcher
+import Reporter
 
 observed_characteristics = Settings.observedCharacteristics
 dirpath_local = Settings.dirpath_offline
 dirpath_ftp = Settings.dirpath_ftp
 dirpath_downloaded = Settings.dirpath_downloaded
 offline_data = Settings.use_offline_data
+min_rec = Settings.min_rec
 
 class DataReader(FileExplorer.FileExplorer):
     """
@@ -14,16 +19,25 @@ class DataReader(FileExplorer.FileExplorer):
     reading the txt files and preliminary conversion of weather data
     """
 
-    def __init__(self,year,station_list):
+    def __init__(self):
         """
         :param year: the year for which the weather data has to be extracted
         :param station_list: list of stations created in the StationSearcher class, containing station information
                              needed for extraction of weather data
         """
-        self.year = year
-        self.station_list = station_list
-        self.raw_data_set = []
-        self.generate_raw_set()
+        print('DataReader')
+        self.year = Settings.year
+        self.station_list = Reporter.station_list
+        self.corrupted_data = True
+        self.extracted_data = []
+
+        #The program tries to generate a valid data set until the data is not marked as corrupted
+        while(self.corrupted_data):
+            self.extracted_data = []
+            self.corrupted_data = False
+            self.generate_raw_set()
+
+        Reporter.extracted_data = self.extracted_data
 
     def generate_raw_set(self):
         """
@@ -33,8 +47,20 @@ class DataReader(FileExplorer.FileExplorer):
         for index,station in enumerate(self.station_list):
             raw_data = self.get_raw_data(station)
             raw_data = self.strip_other_years(self.year,raw_data)
+
+            #If the amount of data for specific climate element and year is insufficient
+            #Data set is marked as empty and station is added to the forbidden station list
+            if(len(raw_data)<min_rec):
+                print("-Insufficient number of records for "+station[0])
+                self.corrupted_data = True
+                self.forbid_station(self.year,station[0],station[2])
+                searcher = StationSearcher.StationSearcher()
+                self.station_list = searcher.station_list
+
+
             raw_data = self.delete_columns(raw_data,index)
-            self.raw_data_set.append(raw_data)
+
+            self.extracted_data.append(raw_data)
 
     def get_raw_data(self,station):
         """
@@ -118,5 +144,27 @@ class DataReader(FileExplorer.FileExplorer):
         return new_list
 
 
+    def forbid_station(self,year,char_name,station_id):
+        """
+        When the number of records for a given year is not sufficient, another station has to be chosen to
+        provide data for a certain climate element. Station with insufficient data is added to the forbidden list
+        to avoid using it in the future for the specific year and climate element
+        """
+        forbidden_item = [year,char_name,station_id]
+        path = 'data/program/forbidden_stations.pickle'
+
+
+        #There is no forbidden list yet
+        if not Path(path).is_file():
+            forbidden_list = [forbidden_item]
+        else:
+            pickle_in = open(path,'rb')
+            forbidden_list = pickle.load(pickle_in)
+            forbidden_list.append(forbidden_item)
+            pickle_in.close()
+
+        pickle_out = open(path,'wb')
+        pickle.dump(forbidden_list, pickle_out)
+        pickle_out.close()
 
 

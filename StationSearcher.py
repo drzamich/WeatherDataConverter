@@ -2,6 +2,9 @@ import Settings
 import math
 import sys
 import FileExplorer
+import pickle
+from pathlib import Path
+import Reporter
 
 observed_characteristics = Settings.observedCharacteristics
 
@@ -11,18 +14,22 @@ class StationSearcher(FileExplorer.FileExplorer):
     stations for which it is most favourable to extract weather data for.
     """
 
-    def __init__(self,year,latitude,longitude):
+    def __init__(self):
         """
         :param year: year for which the weather data is needed
         :param latitude: latitude of the location in degrees
         :param longitude: longitude of the location in degrees
         """
-        self.year = year
-        self.latitude = latitude
-        self.longitude = longitude
+        print('StationSearcher')
+        self.year = Settings.year
+        self.latitude = Settings.lat
+        self.longitude = Settings.lon
 
         self.station_list = []
+        self.load_forbidden_list()
         self.create_station_list()
+
+        Reporter.station_list = self.station_list
 
     def create_station_list(self):
         """
@@ -60,8 +67,11 @@ class StationSearcher(FileExplorer.FileExplorer):
             #The list
             combined_list = self.combine_zips_and_characteristics(char_file,zip_list)
 
+            #Removing from the list stations that are on the forbidden list
+            cleared_list = self.remove_forbidden(combined_list,char_name)
+
             #Choosing station from the list that is closest to the given location
-            best_station = self.choose_best_station(combined_list)
+            best_station = self.choose_best_station(cleared_list)
 
             #In the first and second column of the list with best stations, inserting information about climate element
             best_station.insert(0,char_name)
@@ -185,3 +195,45 @@ class StationSearcher(FileExplorer.FileExplorer):
         c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
 
         return R * c
+
+    def load_forbidden_list(self):
+        """
+        Function loads list of forbidden stations saved as a seralized object
+        :return:
+        """
+        path = 'data/program/forbidden_stations.pickle'
+
+        #There is no forbidden list yet
+        if not Path(path).is_file():
+            self.forbidden_list = []
+        else:
+            pickle_in = open(path,'rb')
+            self.forbidden_list = pickle.load(pickle_in)
+            pickle_in.close()
+
+    def remove_forbidden(self,station_list,char_name):
+        """
+        Function removes stations listed on the forbidden list from the station list
+        :param station_list: list of the stations for a specific climate characteristic
+        :param char_name: name of the climate characteristics
+        :return: station list with without forbidden stations
+        """
+        cleared_list = []
+        for station in station_list:
+            id = station[0]
+            forbidden = False
+            for forbidden_station in self.forbidden_list:
+                forbidden_id = forbidden_station[2]
+                forbidden_year = forbidden_station[0]
+                forbidden_char_name = forbidden_station[1]
+                if forbidden_year == self.year and forbidden_id == id and forbidden_char_name == char_name:
+                    forbidden = True
+                    break
+            if not forbidden:
+                cleared_list.append(station)
+
+        return cleared_list
+
+
+
+

@@ -1,15 +1,19 @@
+import Settings
+import Reporter
+
 class DataOutputer:
     """
     This class, given the prepared sets of climate data, prepares the EPW file
     """
 
-    def __init__(self,prepared_data,station_list,year,lon,lat,output_path):
-        self.prepared_data = prepared_data
-        self.station_list = station_list
-        self.year = year
-        self.lon = str(lon)
-        self.lat = str(lat)
-        self.output_path = output_path
+    def __init__(self):
+        print('Outputer')
+        self.converted_data = Reporter.converted_data
+        self.station_list = Reporter.station_list
+        self.year = Settings.year
+        self.lon = str(Settings.lon)
+        self.lat = str(Settings.lat)
+        self.output_path = Settings.output_path
 
         self.def_set = []
 
@@ -68,7 +72,7 @@ class DataOutputer:
         This function creates the string with GROUND TEMPERATURES in the .epw file
         :return:
         """
-        soil_temperatures = self.prepared_data[4]
+        soil_temperatures = self.converted_data[4]
 
         # Depths for which ground temperatures are recorded
         ground_temperatures_depths = [0.02, 0.05, 0.10, 0.20, 0.50, 1.0]  # m
@@ -133,12 +137,12 @@ class DataOutputer:
 
     def create_blank_set(self):
 
-        year = self.prepared_data[0][0][0][0:4]
+        year = self.converted_data[0][0][0][0:4]
         for i in range (0,8760):
             line = [year,0,0,0,0]
-            line[1] = str(int(self.prepared_data[0][i][0][4:6]))        #month
-            line[2] = str(int(self.prepared_data[0][i][0][6:8]))        #day
-            line[3] = str(int(self.prepared_data[0][i][0][8:10])+1)     #hour
+            line[1] = str(int(self.converted_data[0][i][0][4:6]))        #month
+            line[2] = str(int(self.converted_data[0][i][0][6:8]))        #day
+            line[3] = str(int(self.converted_data[0][i][0][8:10]) + 1)     #hour
             line[4] = '60'                                              #minute
 
             for j in range (5,35):
@@ -153,7 +157,7 @@ class DataOutputer:
                 column = self.fields[field_num][7]
 
                 if table_num != 999:
-                    self.def_set[index][field_num] = self.prepared_data[table_num][index][column]
+                    self.def_set[index][field_num] = self.converted_data[table_num][index][column]
 
     def modify_flags(self):
         for item in self.def_set:
