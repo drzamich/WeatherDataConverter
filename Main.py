@@ -7,7 +7,7 @@ import Reporter
 
 
 if __name__ == '__main__':
-    #Preparing files
+    #Preparing folders
     Preparator.Preparator()
 
     # Calling the StationSearcher constructor using input parameters

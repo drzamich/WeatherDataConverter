@@ -20,18 +20,14 @@ class DataReader(FileExplorer.FileExplorer):
     """
 
     def __init__(self):
-        """
-        :param year: the year for which the weather data has to be extracted
-        :param station_list: list of stations created in the StationSearcher class, containing station information
-                             needed for extraction of weather data
-        """
         print('DataReader')
         self.year = Settings.year
         self.station_list = Reporter.station_list
         self.corrupted_data = True
         self.extracted_data = []
 
-        #The program tries to generate a valid data set until the data is not marked as corrupted
+        #The program tries to generate a valid data set until the data is not marked as corrupted,
+        #which occurs when data set from the station does not have enough number of records for a year
         while(self.corrupted_data):
             self.extracted_data = []
             self.corrupted_data = False

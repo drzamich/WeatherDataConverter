@@ -14,10 +14,6 @@ class DataConverter:
     them for saving in the output file.
     """
     def __init__(self):
-        """
-        :param year: year for which the weather data is needed
-        :param raw_data: set of raw data sets
-        """
         print('DataConverter')
         self.converted_data = copy.deepcopy(Reporter.extracted_data)
         self.year = Settings.year
@@ -31,6 +27,11 @@ class DataConverter:
         Reporter.missing_entries_list = self.missing_entries_list
 
     def prepare_data(self):
+        """
+        Set of functions that prepare raw set of data extracted from the stations but do not convert or
+        recalculate them in any way.
+        """
+
         #Removing duplicated entries (entries with same dates)
         print('-Remove duplicates')
         self.remove_duplicates()
@@ -39,6 +40,7 @@ class DataConverter:
         print('-Insert missing dates')
         self.insert_missing_dates()
 
+        #Saving extracted data set (before interpolation) for future saving in the report file
         Reporter.extracted_data = copy.deepcopy(self.converted_data)
 
         print('-Interpolate data')
@@ -50,7 +52,10 @@ class DataConverter:
 
 
     def calculate_data(self):
-
+        """
+        Set of functions that reformat and recalculate values of climate elements therefore to state needed by the epw
+        file format.
+        """
         #Converting and calculating values for temperature and relative humidity
         print('-Convert air temp data')
         self.convert_air_temperature_data()
@@ -67,9 +72,11 @@ class DataConverter:
         print('-Convert cloudiness data')
         self.convert_cloudiness_data()
 
+        #Converting values of wind data
         print('-Convert wind data')
         self.convert_wind_data()
 
+        #Calculating values of horizontal infrared irradiance
         print('-Calculate horizontal infrared')
         self.calculate_horizontal_infrared()
 
@@ -193,6 +200,10 @@ class DataConverter:
             self.missing_list.append(missing_list_entry)
 
     def interpolate_data(self):
+        """
+        Function that exchanges missing values in the data set with values interpolated either based on nearest
+        non-missing values (interpolate_directly()) or non-missing values in a 24h distance (interpolate_by_average())
+        """
         for index,data in enumerate(self.converted_data):
 
             #Saving indexes of rows with missing data
@@ -220,6 +231,10 @@ class DataConverter:
 
 
     def interpolate_by_average(self,data,missing_values):
+        """
+        Function inserts new values in place of missing values.
+        The new value is the average of value at the same time one day before and one day later.
+        """
         for column, set in enumerate(missing_values):
             for index in set:
                 #looking for indexes of entries with available data, which will be a base for interpolation
@@ -241,10 +256,12 @@ class DataConverter:
                     break
 
                 #missing values at the start of set
+                #new value is equal to the next non-missing value (24h gap)
                 elif lower_index == -1 and upper_index != 9999:
                     data[index][column] = data[upper_index][column]
 
                 #missing values at the end of the set
+                #new value is equal to the last non-missing value (24h gap)
                 elif lower_index != -1 and upper_index == 9999:
                     data[index][column] = data[lower_index][column]
 
@@ -254,7 +271,10 @@ class DataConverter:
 
 
     def interpolate_directly(self,data,missing_values):
-
+        """
+        Function inserts new values in place of missing values.
+        The new is calculated as a result of direct interpolation between neighbouring non-missing values.
+        """
         for column,set in enumerate(missing_values):
             for index in set:
 
@@ -277,10 +297,12 @@ class DataConverter:
                     break
 
                 #missing values at the start of set
+                #new value is equal to the first non-missing value
                 elif lower_index == -1 and upper_index != 9999:
                     data[index][column] = data[upper_index][column]
 
                 #missing values at the end of the set
+                #new value is equal to the last non-missing value
                 elif lower_index != -1 and upper_index == 9999:
                     data[index][column] = data[lower_index][column]
 
@@ -327,6 +349,11 @@ class DataConverter:
                     data_list.pop()
 
     def convert_air_temperature_data(self):
+        """
+        Function prepares air temperature air relative humidity data (formatting) and
+        based on that, calculates Dew Point Temperatues.
+        :return:
+        """
         air_temp_data_list = self.converted_data[0]
         for item in air_temp_data_list:
 
@@ -357,6 +384,9 @@ class DataConverter:
             item.append(rel_humidity)   #item[5]
 
     def convert_pressure_data(self):
+        """
+        Function prepares pressure data (formatting).
+        """
         pressure_data = self.converted_data[3]
         for item in pressure_data:
             press = int(float(item[2]))*100 #[Pa]
@@ -369,6 +399,9 @@ class DataConverter:
             item.append(atm_pressure)
 
     def convert_wind_data(self):
+        """
+        Function prepares wind data (conversion from Grad to degrees, formatting).
+        """
         wind_data = self.converted_data[7]
         for item in wind_data:
             speed = float(item[1])
@@ -391,7 +424,7 @@ class DataConverter:
 
     def convert_solar_data(self):
         """
-        Function responsible for calculating values regarding solar irradiance
+        Function responsible for calculating values regarding solar irradiance.
         :return: data set with calculated additional values
         """
         solar_data_list = self.converted_data[5]
@@ -433,6 +466,9 @@ class DataConverter:
                 item[8] = 0
 
     def convert_cloudiness_data(self):
+        """
+        Function prepares cloudiness data (conversion from oktas to tenths).
+        """
         cloudiness_data_list = self.converted_data[1]
         for item in cloudiness_data_list:
             okta_value = int(item[1])
@@ -452,6 +488,9 @@ class DataConverter:
             item.append(tenth_value)
 
     def calculate_horizontal_infrared(self):
+        """
+        Function calculates values of Horizontal Infrared Radiation Intensity based on temperature and cloudiness data.
+        """
         cloudiness_data = self.converted_data[1]
         temperature_data = self.converted_data[0]
         solar_data = self.converted_data[5]
@@ -471,6 +510,7 @@ class DataConverter:
 
     def dew_point_temperature(self,temp,humidity):
         """
+        Function calculates dew point temperature [*C] based on dry bulb temperature [*C] and rel. humidity [%]
         Taken from https://en.wikipedia.org/wiki/Dew_point#Calculating_the_dew_point
         """
         a = 6.1121
@@ -486,11 +526,18 @@ class DataConverter:
         return T_dp1
 
     def emissivity(self,dew_point,sky_cover):
+        """
+        Function calculates sky emissivity based on the dew point temperature [K] and cloudiness [tenths])
+        """
         N = sky_cover
         e = (0.787+0.764*math.log(dew_point/273))*(1+0.0224*N+0.0035*N*N+0.00028*N*N*N)
         return e
 
     def horizontal_infrared_intensity(self,dry_bulb,dew_point,sky_cover):
+        """
+        Function calculates Horizontal Infrared Radiation Intensity [W/m2] based on dry bulb temp. [K],
+        dew point temp [K] and sky conver [tenths]
+        """
         b = 5.6697*10**(-8)
         e = self.emissivity(dew_point,sky_cover)
         hor = e*b*dry_bulb**(4)

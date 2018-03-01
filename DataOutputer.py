@@ -3,7 +3,7 @@ import Reporter
 
 class DataOutputer:
     """
-    This class, given the prepared sets of climate data, prepares the EPW file
+    This class, given the prepared sets of climate data, prepares the EPW file for use in other programs.
     """
 
     def __init__(self):
@@ -15,8 +15,9 @@ class DataOutputer:
         self.lat = str(Settings.lat)
         self.output_path = Settings.output_path
 
-        self.def_set = []
+        self.default_set = []
 
+        #The variable containing characteristics of all fields that are present in the EPW file
         self.fields = [
             #[field_number, field_name, default (missing)_value, flag_missing, flag_available, uncertainty,
             # data_set_table, table_column]
@@ -57,20 +58,32 @@ class DataOutputer:
             [35, 'Liquid Precipitation Quantity','99','','','',999,999]
         ]
         self.field_number = len(self.fields)
+
         self.prepare_data()
 
     def prepare_data(self):
+        #Calculate average ground temperatures
         self.prepare_soil_data()
+
+        #Create data set with all values marked as missing
         self.create_blank_set()
+
+        #Exchange all non-missing values in previously prepared data set
         self.fill_blank_set()
+
+        #Modify flags for non-missing values
         self.modify_flags()
+
+        #Prepare information for header
         self.prepare_header()
+
+        #Save .epw file
         self.write_epw_file()
 
     def prepare_soil_data(self):
         """
-        This function creates the string with GROUND TEMPERATURES in the .epw file
-        :return:
+        Function creates the string with GROUND TEMPERATURES in the .epw file.
+        Specifically, it calculates average ground temperatures for different depths for each first day of the month.
         """
         soil_temperatures = self.converted_data[4]
 
@@ -136,7 +149,10 @@ class DataOutputer:
         self.g_text = self.g_text[:-1]
 
     def create_blank_set(self):
-
+        """
+        Function creates data set in the EPW format with all values markes as missing (default values from self.fields
+        variable.
+        """
         year = self.converted_data[0][0][0][0:4]
         for i in range (0,8760):
             line = [year,0,0,0,0]
@@ -148,19 +164,28 @@ class DataOutputer:
             for j in range (5,35):
                 line.append(self.fields[j][2])
 
-            self.def_set.append(line)
+            self.default_set.append(line)
 
     def fill_blank_set(self):
-        for index,item in enumerate(self.def_set):
+        """
+        Function exchanges missing values in previously created data set with actual values, when available.
+        """
+        for index,item in enumerate(self.default_set):
             for field_num, field in enumerate(item):
                 table_num = self.fields[field_num][6]
                 column = self.fields[field_num][7]
 
+                #If there exists a table and column where data is stored, value from default set is exchanged with
+                #this value
                 if table_num != 999:
-                    self.def_set[index][field_num] = self.converted_data[table_num][index][column]
+                    self.default_set[index][field_num] = self.converted_data[table_num][index][column]
 
     def modify_flags(self):
-        for item in self.def_set:
+        """
+        Function that modifies flags of non-missing values. Flags are defined in self.fields variable according to
+        Energy Plus manual.
+        """
+        for item in self.default_set:
             flag = ''
             for i in range (6,35):
                 #Checking if the value in the set has the default value for the field
@@ -172,6 +197,9 @@ class DataOutputer:
             item[5] = flag
 
     def prepare_header(self):
+        """
+        Function that prepares heading lines in the .epw file.
+        """
         cityname = "Musterstadt"
         regionname = 'Sachsen'
         WMO = '123456'
@@ -183,18 +211,28 @@ class DataOutputer:
             elev += float(station[5])
         elev = str(elev/8)
 
+        #preparing text stating for which stations the weather data is collected
+        c_text = 'Weather data obtained from following stations:'
+        for station in Reporter.station_list:
+            c_text += ' '+station[0]+': '+station[8]+' ('+station[9]+') ID: '+station[2]+ ' |'
+
+
         header = []
         header.append('LOCATION,'+cityname+','+regionname+',DEU,DWD,'+WMO+','+self.lat+','+self.lon+',1.0,'+elev)
         header.append('DESIGN CONDITIONS,0')
         header.append('TYPICAL/EXTREME PERIODS,0')
         header.append(self.g_text)
         header.append('HOLIDAYS/DAYLIGHT SAVINGS,No,0,0,0')
-        header.append('COMMENTS 1, Data set prepared by Weather Data Converter')
+        header.append('COMMENTS 1, Data set prepared by Weather Data Converter. '+c_text)
         header.append('COMMENTS 2, Made at TU Dresden')
         header.append('DATA PERIODS,1,1,Data,Sunday,1/1,12/31')
 
         self.heading = header
+
     def write_epw_file(self):
+        """
+        Funcion that merges all prepared lines together in a .ewp file and saves it in a defined place.
+        """
         file = open(self.output_path,"w")
 
         for line in self.heading:
@@ -202,7 +240,7 @@ class DataOutputer:
 
         for i in range (0,8760):
             line = ''
-            for item in self.def_set[i]:
+            for item in self.default_set[i]:
                 line += str(item)+','
             line = line[:-1]
             file.write(line+'\n')

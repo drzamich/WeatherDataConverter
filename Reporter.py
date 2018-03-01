@@ -11,7 +11,10 @@ missing_list = []
 missing_entries_list = []
 
 class Reporter:
-
+    """
+    Class responsible for generating report txt files that allow user to check the correctness of extracted
+    weather data.
+    """
     def __init__(self):
         print('Reporter')
         self.year = Settings.year
@@ -25,14 +28,25 @@ class Reporter:
         self.extracted_data = extracted_data
         self.converted_data = converted_data
 
+        #Create subfolder in the reports/ directory
         self.create_folder()
-        self.generate_report()
-        self.save_missing_values()
-        self.save_converted_data()
-        self.save_extracted_data()
 
+        #Generate report txt file with staions list and number of missing values per climate element
+        self.generate_report()
+
+        #Generate files with missing periods per climate element
+        self.save_missing_values()
+
+        #Generate txt files with raw data extracted from stations
+        self.save_extracted_data_table()
+
+        #Generate txt files with intepolated and recalculated data
+        self.save_converted_data_table()
 
     def create_folder(self):
+        """
+        Functon creates necessary subfolders in the reports/ directory
+        """
         current_date_ts = datetime.datetime.now()
         current_date = current_date_ts.strftime('%Y%m%d - %H%M%S')
         self.dirpath = 'reports/' + current_date + '/'
@@ -41,6 +55,10 @@ class Reporter:
         os.mkdir(self.dirpath + 'raw_data/')
 
     def generate_report(self):
+        """
+        Function generates report txt file with staions list and number of missing values per climate element
+        """
+
         #Using the imported PrettyTable class, creating a table to present the list of stations choosen for the
         #data extraction
         table = PrettyTable(['Char', 'Short', 'ID', 'DateStart', 'DateEnd', 'Elev.', 'Lat.', 'Lon.', 'City', 'Bundesland'])
@@ -67,6 +85,9 @@ class Reporter:
         f.close()
 
     def save_missing_values(self):
+        """
+        Function generates files with missing periods per climate element
+        """
         #Writing in the 00_missing_values.txt file, all the time periods with missing entries in the original data set
         f = open(self.dirpath + '00_missing_values.txt', 'a')
 
@@ -77,22 +98,23 @@ class Reporter:
             f.write('\n')
         f.close()
 
-
-    def save_converted_data_table(self):
+    def save_extracted_data(self):
+        """
+        Function txt files with raw data extracted from stations in the raw form (pure Python list).
+        """
         for index, station in enumerate(self.station_list):
             char_name = station[0]
 
-            table = PrettyTable(Settings.headers_converted_data[index])
-            for entry in self.converted_data[index]:
-                table.add_row(entry)
-
-            filepath = self.dirpath + 'converted_data/'+char_name+'.txt'
-            f = open(filepath,'a')
-            f.write(str(table))
+            filepath = self.dirpath + 'raw_data/' + char_name + '.txt'
+            f = open(filepath, 'a')
+            for entry in self.extracted_data[index]:
+                f.write(str(entry) + '\n')
             f.close()
 
-
     def save_extracted_data_table(self):
+        """
+        Function txt files with raw data extracted from stations in the form of table with headers.
+        """
         for index, station in enumerate(self.station_list):
             char_name = station[0]
 
@@ -107,6 +129,9 @@ class Reporter:
             f.close()
 
     def save_converted_data(self):
+        """
+        Function creates txt files with interpolated and recalculated data in the raw form (pure Python list).
+        """
         for index, station in enumerate(self.station_list):
             char_name = station[0]
 
@@ -116,12 +141,20 @@ class Reporter:
                 f.write(str(entry)+'\n')
             f.close()
 
-    def save_extracted_data(self):
+    def save_converted_data_table(self):
+        """
+        Function creates txt files with interpolated and recalculated data in the form of table with headers.
+        """
         for index, station in enumerate(self.station_list):
             char_name = station[0]
 
-            filepath = self.dirpath + 'raw_data/' + char_name + '.txt'
-            f = open(filepath, 'a')
-            for entry in self.extracted_data[index]:
-                f.write(str(entry) + '\n')
+            table = PrettyTable(Settings.headers_converted_data[index])
+            for entry in self.converted_data[index]:
+                table.add_row(entry)
+
+            filepath = self.dirpath + 'converted_data/'+char_name+'.txt'
+            f = open(filepath,'a')
+            f.write(str(table))
             f.close()
+
+

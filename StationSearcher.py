@@ -15,18 +15,17 @@ class StationSearcher(FileExplorer.FileExplorer):
     """
 
     def __init__(self):
-        """
-        :param year: year for which the weather data is needed
-        :param latitude: latitude of the location in degrees
-        :param longitude: longitude of the location in degrees
-        """
         print('StationSearcher')
         self.year = Settings.year
         self.latitude = Settings.lat
         self.longitude = Settings.lon
 
         self.station_list = []
+
+        #Load list of stations that are excluded from searching
         self.load_forbidden_list()
+
+        #Create most favourable station list
         self.create_station_list()
 
         Reporter.station_list = self.station_list
@@ -199,7 +198,6 @@ class StationSearcher(FileExplorer.FileExplorer):
     def load_forbidden_list(self):
         """
         Function loads list of forbidden stations saved as a seralized object
-        :return:
         """
         path = 'data/program/forbidden_stations.pickle'
 
