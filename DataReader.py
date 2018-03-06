@@ -21,6 +21,7 @@ class DataReader(FileExplorer.FileExplorer):
 
     def __init__(self):
         print('DataReader')
+        Reporter.setStatus('Reading data',11)
         self.year = Settings.year
         self.station_list = Reporter.station_list
         self.corrupted_data = True
@@ -34,6 +35,8 @@ class DataReader(FileExplorer.FileExplorer):
             self.generate_raw_set()
 
         Reporter.extracted_data = self.extracted_data
+
+        Reporter.setStatus('Data read',20)
 
     def generate_raw_set(self):
         """

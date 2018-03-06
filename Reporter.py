@@ -17,6 +17,7 @@ class Reporter:
     """
     def __init__(self):
         print('Reporter')
+        setStatus('Preparing reports', 90)
         self.year = Settings.year
         self.lon = Settings.lon
         self.lat = Settings.lat
@@ -38,11 +39,12 @@ class Reporter:
         self.save_missing_values()
 
         #Generate txt files with raw data extracted from stations
-        self.save_extracted_data_table()
+        self.save_extracted_data()
 
         #Generate txt files with intepolated and recalculated data
-        self.save_converted_data_table()
+        self.save_converted_data()
 
+        setStatus('Process completed', 100)
     def create_folder(self):
         """
         Functon creates necessary subfolders in the reports/ directory
@@ -80,7 +82,7 @@ class Reporter:
         #Writing in the report file number of missing entries in the original data set for each climate  element
         for index,station in enumerate(self.station_list):
             report_text = ('\nSuccesfully extracted data for '+station[0]+'\n'
-                +'There are %i missing hour entries in the original data set \n' % self.missing_entries[index])
+                +'There are %i missing hour entries in the original gdata set \n' % self.missing_entries[index])
             f.write(report_text)
         f.close()
 
@@ -157,4 +159,7 @@ class Reporter:
             f.write(str(table))
             f.close()
 
+def setStatus(stage_name_new, stage_percent_new):
+    Settings.stage_name = stage_name_new
+    Settings.stage_percent = stage_percent_new
 

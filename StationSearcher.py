@@ -15,7 +15,8 @@ class StationSearcher(FileExplorer.FileExplorer):
     """
 
     def __init__(self):
-        print('StationSearcher')
+        Reporter.setStatus('Searching for stations',1)
+
         self.year = Settings.year
         self.latitude = Settings.lat
         self.longitude = Settings.lon
@@ -29,6 +30,8 @@ class StationSearcher(FileExplorer.FileExplorer):
         self.create_station_list()
 
         Reporter.station_list = self.station_list
+
+        Reporter.setStatus('Stations found',10)
 
     def create_station_list(self):
         """

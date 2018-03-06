@@ -15,6 +15,7 @@ class DataConverter:
     """
     def __init__(self):
         print('DataConverter')
+        Reporter.setStatus('Converting data...',21)
         self.converted_data = copy.deepcopy(Reporter.extracted_data)
         self.year = Settings.year
         self.missing_list =[]           #list that contains data periods missing from raw data sets
@@ -34,20 +35,24 @@ class DataConverter:
 
         #Removing duplicated entries (entries with same dates)
         print('-Remove duplicates')
+        Reporter.setStatus('Converting data... removiung duplicates', 25)
         self.remove_duplicates()
 
         #Inserting entries for which no entries exist in the original data set (values marked as missing: -999)
         print('-Insert missing dates')
+        Reporter.setStatus('Converting data... inserting missing dates', 27)
         self.insert_missing_dates()
 
         #Saving extracted data set (before interpolation) for future saving in the report file
         Reporter.extracted_data = copy.deepcopy(self.converted_data)
 
         print('-Interpolate data')
+        Reporter.setStatus('Converting data... interpolation', 30)
         self.interpolate_data()
 
         #Removing extra entries for leap year (continous set, no gaps!)
         print('-Strip leap year')
+        Reporter.setStatus('Converting data... stripping leap year', 40)
         self.strip_leap_year()
 
 
@@ -58,26 +63,32 @@ class DataConverter:
         """
         #Converting and calculating values for temperature and relative humidity
         print('-Convert air temp data')
+        Reporter.setStatus('Calculating data... air temperature', 42)
         self.convert_air_temperature_data()
 
         # Converting and calculating values for pressure
         print('-Convert pressure data')
+        Reporter.setStatus('Calculating data... pressure', 44)
         self.convert_pressure_data()
 
         #Converting and calculating values of irradiance
         print('-Convert solar data')
+        Reporter.setStatus('Calculating data... solar data', 46)
         self.convert_solar_data()
 
         #Converting values of cloudiness from oktas to tenths
         print('-Convert cloudiness data')
+        Reporter.setStatus('Calculating data... cloudiness', 50)
         self.convert_cloudiness_data()
 
         #Converting values of wind data
         print('-Convert wind data')
+        Reporter.setStatus('Calculating data... wind', 54)
         self.convert_wind_data()
 
         #Calculating values of horizontal infrared irradiance
         print('-Calculate horizontal infrared')
+        Reporter.setStatus('Calculating data... horizontal infrared', 56)
         self.calculate_horizontal_infrared()
 
 

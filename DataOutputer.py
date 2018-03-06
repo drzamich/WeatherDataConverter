@@ -8,6 +8,7 @@ class DataOutputer:
 
     def __init__(self):
         print('Outputer')
+        Reporter.setStatus('Writing data', 70)
         self.converted_data = Reporter.converted_data
         self.station_list = Reporter.station_list
         self.year = Settings.year

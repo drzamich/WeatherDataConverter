@@ -4,11 +4,21 @@ import DataReader
 import DataConverter
 import DataOutputer
 import Reporter
+import GUI
+import sys
+from PyQt5.QtWidgets import QApplication
 
 
 if __name__ == '__main__':
+    print('lalal')
     #Preparing folders
     Preparator.Preparator()
+
+    #Calling the GUI
+    app = QApplication(sys.argv)
+    gui = GUI.GUI()
+    sys.exit(app.exec_())
+
 
     # Calling the StationSearcher constructor using input parameters
     # Output -  list of 7 stations that are most favourable for given input paramaters, saved in variable station_list
@@ -30,3 +40,5 @@ if __name__ == '__main__':
     #Calling the Reporter class that based on the data generated in steps before, creates report files in the reports/
     #directory
     Reporter.Reporter()
+
+

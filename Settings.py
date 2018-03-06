@@ -1,7 +1,7 @@
 #Input parameters
 year = 2016
-lat = 50.91
 lon = 13.34
+lat = 50.91
 
 #Output path for .epw file
 output_path = 'output/Output.epw'
@@ -89,3 +89,11 @@ headers_converted_data = [
     ['Date','(r)Sunshine duration [min]'],
     ['Date','(r)Wind speed [m/s]','(r)Wind direction [Grad]','Wind Direction [*]','Wind Speed [m/s]']
 ]
+
+stage_name = 'Click START to proceed.'
+stage_percent = 0
+
+def setStatus(stage_name_new,stage_percent_new):
+    stage_name = stage_name_new
+    stage_percent = stage_percent_new
+
