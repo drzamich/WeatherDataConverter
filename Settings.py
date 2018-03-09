@@ -3,8 +3,7 @@ year = 2016
 lon = 13.34
 lat = 50.91
 
-#Output path for .epw file
-output_path = 'output/Output.epw'
+
 
 """
 Variable defining if the program can use weather data previously downloaded from the FTP server
@@ -15,12 +14,19 @@ If the value is set to 1, program will search directory defined in dirpath_offli
 The folder hierarchy there must be the same as on the FTP Server
 """
 use_offline_data = 1
+
 dirpath_offline = 'E:\\DOKUMENTY\\WeatherData\\'
 
 """
 Variable storing path to the directory with hourly climate data on the FTP server
 """
 dirpath_ftp = '/pub/CDC/observations_germany/climate/hourly/'
+
+"""
+Variable defining place on the hard drive where all the data will be stored. That includes downloaded files,
+reports etc
+"""
+dirpath_data = 'E:\\TEST\\'
 
 """
 Variable controlling if the testing mode is on. If it's off, the program generates data basing on the year and 
@@ -54,7 +60,7 @@ observedCharacteristics = [
 ]
 
 #Path to the directory with files downloaded from the FTP server
-dirpath_downloaded = 'data/download/'
+dirpath_downloaded = dirpath_data+'data/download/'
 
 #Format of the timestamp used in the program (based on the format used in the weather data)
 fmt = '%Y%m%d%H'
@@ -97,3 +103,8 @@ def setStatus(stage_name_new,stage_percent_new):
     stage_name = stage_name_new
     stage_percent = stage_percent_new
 
+min_year = 1958
+max_year = 2017
+
+#Output path for .epw file
+output_path = dirpath_data+'output'+'\Output.epw'

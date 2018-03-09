@@ -10,15 +10,15 @@ from PyQt5.QtWidgets import QApplication
 
 
 if __name__ == '__main__':
-    print('lalal')
-    #Preparing folders
-    Preparator.Preparator()
+
 
     #Calling the GUI
     app = QApplication(sys.argv)
-    gui = GUI.GUI()
+    gui = GUI.MyWindow()
     sys.exit(app.exec_())
 
+    #Preparing folders
+    Preparator.Preparator()
 
     # Calling the StationSearcher constructor using input parameters
     # Output -  list of 7 stations that are most favourable for given input paramaters, saved in variable station_list

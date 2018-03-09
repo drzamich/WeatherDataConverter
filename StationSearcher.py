@@ -202,7 +202,7 @@ class StationSearcher(FileExplorer.FileExplorer):
         """
         Function loads list of forbidden stations saved as a seralized object
         """
-        path = 'data/program/forbidden_stations.pickle'
+        path = Settings.dirpath_data+'data/program/forbidden_stations.pickle'
 
         #There is no forbidden list yet
         if not Path(path).is_file():

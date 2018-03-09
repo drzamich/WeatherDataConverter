@@ -51,7 +51,7 @@ class Reporter:
         """
         current_date_ts = datetime.datetime.now()
         current_date = current_date_ts.strftime('%Y%m%d - %H%M%S')
-        self.dirpath = 'reports/' + current_date + '/'
+        self.dirpath = Settings.dirpath_data+'reports/' + current_date + '/'
         os.mkdir(self.dirpath)
         os.mkdir(self.dirpath+'converted_data/')
         os.mkdir(self.dirpath + 'raw_data/')

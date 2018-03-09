@@ -1,4 +1,5 @@
 import os
+import Settings
 
 class Preparator:
     """
@@ -8,12 +9,12 @@ class Preparator:
         print('Preparator')
 
         #Needed subfolders
-        self.subfolders = ['data','data/program','reports','output']
+        self.subfolders = ['','data','data/program','reports','output','data/download']
 
         self.create_folders()
 
     def create_folders(self):
         for subfolder in self.subfolders:
-            path = subfolder+'/'
+            path = Settings.dirpath_data+subfolder+'/'
             if not os.path.isdir(path):
                 os.mkdir(path)
