@@ -181,3 +181,6 @@ report.txt
 reports/
 Sandbox.py
 Test.py
+programdaata/
+build/
+dist/

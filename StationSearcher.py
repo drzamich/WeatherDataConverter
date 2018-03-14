@@ -54,7 +54,7 @@ class StationSearcher(FileExplorer.FileExplorer):
             filepath = self.generate_dirpath(char_name) + char_file_name
 
             #Downloading characteristics file if neccessary
-            if not self.offline_data:
+            if not Settings.use_offline_data:
                 self.download_file(char_name,char_file_name)
                 filepath = self.generate_dirpath(type='download') + char_file_name
 
@@ -174,7 +174,6 @@ class StationSearcher(FileExplorer.FileExplorer):
 
         #Returning most favourable station's characteristics
         return beststation
-
     def gpsdistance(self, lat1, lon1, lat2, lon2):
         """
         Function responsible for calculating, using the Haversine formula, distance in meters from two points on Earth
@@ -202,7 +201,7 @@ class StationSearcher(FileExplorer.FileExplorer):
         """
         Function loads list of forbidden stations saved as a seralized object
         """
-        path = Settings.dirpath_data+'data/program/forbidden_stations.pickle'
+        path = Settings.dirpath_program + '/programdata/forbidden_stations.pickle'
 
         #There is no forbidden list yet
         if not Path(path).is_file():

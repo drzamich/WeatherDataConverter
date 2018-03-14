@@ -3,8 +3,13 @@ The ``irradiance`` module contains functions for modeling global
 horizontal irradiance, direct normal irradiance, diffuse horizontal
 irradiance, and total irradiance under various conditions.
 """
-
 from __future__ import division
+"""
+IMPORTANT NOTE
+For purposes of the very Weather Data Converter program, the lines 103 to 117 and 1192
+were commented out in order to avoid using pandas library that caused problems at compilation.
+Therefore this module is less universal but the output does not change in this specific case.
+"""
 
 import logging
 
@@ -13,11 +18,11 @@ from collections import OrderedDict
 from functools import partial
 
 import numpy as np
-import pandas as pd
+# import pandas as pd
 
 from pvlib import tools
 from pvlib import solarposition
-from pvlib import atmosphere
+import atmosphere
 
 pvl_logger = logging.getLogger('pvlib')
 
@@ -91,22 +96,26 @@ def extraradiation(datetime_or_doy, solar_constant=1366.1, method='spencer',
     # complicated because there are many day-of-year-like input types,
     # and the different algorithms need different types. Maybe you have
     # a better way to do it.
-    if isinstance(datetime_or_doy, pd.DatetimeIndex):
-        to_doy = tools._pandas_to_doy  # won't be evaluated unless necessary
-        to_datetimeindex = lambda x: datetime_or_doy
-        to_output = partial(pd.Series, index=datetime_or_doy)
-    elif isinstance(datetime_or_doy, pd.Timestamp):
-        to_doy = tools._pandas_to_doy
-        to_datetimeindex = \
-            tools._datetimelike_scalar_to_datetimeindex
-        to_output = tools._scalar_out
-    elif isinstance(datetime_or_doy,
-                    (datetime.date, datetime.datetime, np.datetime64)):
-        to_doy = tools._datetimelike_scalar_to_doy
-        to_datetimeindex = \
-            tools._datetimelike_scalar_to_datetimeindex
-        to_output = tools._scalar_out
-    elif np.isscalar(datetime_or_doy):  # ints and floats of various types
+
+    #the following lines were commented out in order not to use pandas library
+    # if isinstance(datetime_or_doy, pd.DatetimeIndex):
+    #     to_doy = tools._pandas_to_doy  # won't be evaluated unless necessary
+    #     to_datetimeindex = lambda x: datetime_or_doy
+    #     to_output = partial(pd.Series, index=datetime_or_doy)
+    # elif isinstance(datetime_or_doy, pd.Timestamp):
+    #     to_doy = tools._pandas_to_doy
+    #     to_datetimeindex = \
+    #         tools._datetimelike_scalar_to_datetimeindex
+    #     to_output = tools._scalar_out
+    # elif isinstance(datetime_or_doy,
+    #                 (datetime.date, datetime.datetime, np.datetime64)):
+    #     to_doy = tools._datetimelike_scalar_to_doy
+    #     to_datetimeindex = \
+    #         tools._datetimelike_scalar_to_datetimeindex
+    #     to_output = tools._scalar_out
+
+    #the following line originally statred with 'elif' and was part of the previous if-block
+    if np.isscalar(datetime_or_doy):  # ints and floats of various types
         to_doy = lambda x: datetime_or_doy
         to_datetimeindex = partial(tools._doy_to_datetimeindex,
                                    epoch_year=epoch_year)
@@ -1177,8 +1186,9 @@ def disc(ghi, zenith, datetime_or_doy, pressure=101325):
     output['kt'] = kt
     output['airmass'] = am
 
-    if isinstance(datetime_or_doy, pd.DatetimeIndex):
-        output = pd.DataFrame(output, index=datetime_or_doy)
+    #The following lines were commented out (see note in header)
+    # if isinstance(datetime_or_doy, pd.DatetimeIndex):
+    #     output = pd.DataFrame(output, index=datetime_or_doy)
 
     return output
 

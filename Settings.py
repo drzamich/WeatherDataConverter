@@ -1,8 +1,10 @@
+import os
+import pickle
+
 #Input parameters
 year = 2016
 lon = 13.34
 lat = 50.91
-
 
 
 """
@@ -13,20 +15,26 @@ connect to the DWD FTP server and download files from there. Therefore internet 
 If the value is set to 1, program will search directory defined in dirpath_offline in search for weather data
 The folder hierarchy there must be the same as on the FTP Server
 """
-use_offline_data = 1
+use_offline_data = 0
 
 dirpath_offline = 'E:\\DOKUMENTY\\WeatherData\\'
 
 """
 Variable storing path to the directory with hourly climate data on the FTP server
 """
-dirpath_ftp = '/pub/CDC/observations_germany/climate/hourly/'
+ftp_dirpath = '/pub/CDC/observations_germany/climate/hourly/'
+
+ftp_adress = 'ftp-cdc.dwd.de'
+
+ftp_user = 'anonymous'
+
+ftp_pass = ''
 
 """
 Variable defining place on the hard drive where all the data will be stored. That includes downloaded files,
 reports etc
 """
-dirpath_data = 'E:\\TEST\\'
+dirpath_program = os.getcwd()
 
 """
 Variable controlling if the testing mode is on. If it's off, the program generates data basing on the year and 
@@ -60,7 +68,7 @@ observedCharacteristics = [
 ]
 
 #Path to the directory with files downloaded from the FTP server
-dirpath_downloaded = dirpath_data+'data/download/'
+dirpath_downloaded = dirpath_program + '/data/download/'
 
 #Format of the timestamp used in the program (based on the format used in the weather data)
 fmt = '%Y%m%d%H'
@@ -100,6 +108,7 @@ stage_name = 'Click START to proceed.'
 stage_percent = 0
 
 def setStatus(stage_name_new,stage_percent_new):
+    global stage_name
     stage_name = stage_name_new
     stage_percent = stage_percent_new
 
@@ -107,4 +116,32 @@ min_year = 1958
 max_year = 2017
 
 #Output path for .epw file
-output_path = dirpath_data+'output'+'\Output.epw'
+
+
+output_directory = dirpath_program + '\output'
+output_filename = 'Output.epw'
+output_path = output_directory + '/' + output_filename
+
+
+def load_settings():
+    try:
+        settings = pickle.load(open('programdata/settings.pickle','rb'))
+        globals().update(settings)
+    except:
+        pass
+
+def save_settings():
+    global year, lon, lat
+    global use_offline_data, dirpath_offline
+    global ftp_dirpath, ftp_adress, ftp_user, ftp_pass
+    global output_directory
+
+    settings = {'year': year, 'lon': lon, 'lat': lat, 'use_offline_data': use_offline_data,
+                'dirpath_offline': dirpath_offline, 'ftp_dirpath':ftp_dirpath, 'ftp_adress':ftp_adress,
+                'ftp_user':ftp_user, 'ftp_pass': ftp_pass, 'output_directory': output_directory,
+                'output_path': output_path}
+
+    try:
+        pickle.dump(settings,open('programdata/settings.pickle','wb'))
+    except:
+        pass

@@ -34,22 +34,6 @@
   <property name="windowTitle">
    <string>Dialog</string>
   </property>
-  <widget class="QDialogButtonBox" name="buttonBox">
-   <property name="geometry">
-    <rect>
-     <x>30</x>
-     <y>320</y>
-     <width>341</width>
-     <height>32</height>
-    </rect>
-   </property>
-   <property name="orientation">
-    <enum>Qt::Horizontal</enum>
-   </property>
-   <property name="standardButtons">
-    <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
-   </property>
-  </widget>
   <widget class="QLabel" name="label_2">
    <property name="geometry">
     <rect>
@@ -139,7 +123,7 @@
        <string>Browse...</string>
       </property>
      </widget>
-     <widget class="QCheckBox" name="checkBox">
+     <widget class="QCheckBox" name="offlineData_checkBox">
       <property name="geometry">
        <rect>
         <x>10</x>
@@ -163,10 +147,10 @@
       </rect>
      </property>
      <property name="text">
-      <string>Path for storing resuls (downloaded files etc.):</string>
+      <string>Default path to the .epw output folder</string>
      </property>
     </widget>
-    <widget class="QLineEdit" name="programDataField">
+    <widget class="QLineEdit" name="outputPathField">
      <property name="geometry">
       <rect>
        <x>20</x>
@@ -176,7 +160,7 @@
       </rect>
      </property>
     </widget>
-    <widget class="QPushButton" name="offlineDataFolderBrowse_2">
+    <widget class="QPushButton" name="outputhPathFolderBrowse">
      <property name="geometry">
       <rect>
        <x>250</x>
@@ -217,7 +201,7 @@
     </widget>
    </widget>
   </widget>
-  <widget class="QDialogButtonBox" name="buttonBox_2">
+  <widget class="QDialogButtonBox" name="buttonBox">
    <property name="geometry">
     <rect>
      <x>180</x>
@@ -234,38 +218,6 @@
  <resources/>
  <connections>
   <connection>
-   <sender>buttonBox_2</sender>
-   <signal>accepted()</signal>
-   <receiver>Settings</receiver>
-   <slot>accept()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>257</x>
-     <y>271</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>157</x>
-     <y>274</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>buttonBox</sender>
-   <signal>rejected()</signal>
-   <receiver>Settings</receiver>
-   <slot>reject()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>316</x>
-     <y>260</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>286</x>
-     <y>274</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>offlineDataFolderBrowse</sender>
    <signal>clicked()</signal>
    <receiver>Settings</receiver>
@@ -281,9 +233,57 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>outputhPathFolderBrowse</sender>
+   <signal>clicked()</signal>
+   <receiver>Settings</receiver>
+   <slot>outputPathFieldBrowse_clicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>293</x>
+     <y>83</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>174</x>
+     <y>149</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>accepted()</signal>
+   <receiver>Settings</receiver>
+   <slot>accept()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>257</x>
+     <y>271</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>174</x>
+     <y>149</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>rejected()</signal>
+   <receiver>Settings</receiver>
+   <slot>reject()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>257</x>
+     <y>271</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>174</x>
+     <y>149</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>offlineDataFolderBrowse_clicked()</slot>
-  <slot>programDataFieldBrowse_clicked()</slot>
+  <slot>outputPathFieldBrowse_clicked()</slot>
  </slots>
 </ui>

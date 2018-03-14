@@ -5,13 +5,6 @@ from pathlib import Path
 import StationSearcher
 import Reporter
 
-observed_characteristics = Settings.observedCharacteristics
-dirpath_local = Settings.dirpath_offline
-dirpath_ftp = Settings.dirpath_ftp
-dirpath_downloaded = Settings.dirpath_downloaded
-offline_data = Settings.use_offline_data
-min_rec = Settings.min_rec
-
 class DataReader(FileExplorer.FileExplorer):
     """
     This class is responsible for searching directories with weather data,
@@ -49,13 +42,12 @@ class DataReader(FileExplorer.FileExplorer):
 
             #If the amount of data for specific climate element and year is insufficient
             #Data set is marked as empty and station is added to the forbidden station list
-            if(len(raw_data)<min_rec):
+            if(len(raw_data)<Settings.min_rec):
                 print("-Insufficient number of records for "+station[0])
                 self.corrupted_data = True
                 self.forbid_station(self.year,station[0],station[2])
                 searcher = StationSearcher.StationSearcher()
                 self.station_list = searcher.station_list
-
 
             raw_data = self.delete_columns(raw_data,index)
 
@@ -83,7 +75,7 @@ class DataReader(FileExplorer.FileExplorer):
         path = self.generate_dirpath(char_name)+filename
 
         #If no offline data is used, downloading the zip fiile
-        if not offline_data:
+        if not Settings.use_offline_data:
             self.download_file(char_name,filename)
             path = self.generate_dirpath(type='download')+filename
 
@@ -150,7 +142,7 @@ class DataReader(FileExplorer.FileExplorer):
         to avoid using it in the future for the specific year and climate element
         """
         forbidden_item = [year,char_name,station_id]
-        path = 'data/program/forbidden_stations.pickle'
+        path = 'programdata/forbidden_stations.pickle'
 
 
         #There is no forbidden list yet

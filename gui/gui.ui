@@ -162,10 +162,16 @@
    <property name="text">
     <string>Settings</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+S</string>
+   </property>
   </action>
   <action name="actionQuit">
    <property name="text">
     <string>Quit</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Q</string>
    </property>
   </action>
  </widget>
@@ -235,10 +241,60 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>latField</sender>
+   <signal>editingFinished()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>inputField_edited()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>153</x>
+     <y>89</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>126</x>
+     <y>161</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>lonField</sender>
+   <signal>editingFinished()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>inputField_edited()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>153</x>
+     <y>63</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>126</x>
+     <y>161</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>yearField</sender>
+   <signal>editingFinished()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>inputField_edited()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>153</x>
+     <y>115</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>126</x>
+     <y>161</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>browse_file_clicked()</slot>
   <slot>settings_tab_clicked()</slot>
   <slot>startConversionButton_clicked()</slot>
+  <slot>program_close()</slot>
+  <slot>inputField_edited()</slot>
  </slots>
 </ui>

@@ -15,7 +15,6 @@ class DataOutputer:
         self.lon = str(Settings.lon)
         self.lat = str(Settings.lat)
         self.output_path = Settings.output_path
-
         self.default_set = []
 
         #The variable containing characteristics of all fields that are present in the EPW file

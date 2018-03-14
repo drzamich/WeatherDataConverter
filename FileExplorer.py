@@ -4,13 +4,10 @@ import os
 from pathlib import Path
 import zipfile
 
-dirpath_downloaded = Settings.dirpath_downloaded
-
 class FileExplorer:
     """
     This class contains fuctions are are helpful for other classes in managing files and directories
     """
-    offline_data = Settings.use_offline_data
 
     def get_directory_listing(self,char_name,*extensions):
         """
@@ -24,17 +21,17 @@ class FileExplorer:
         #Based on the climate element name, generating path to the directory
         path = self.generate_dirpath(char_name)
 
-        if self.offline_data:
+        if Settings.use_offline_data:
             files_list = os.listdir(path)
 
         else:
             #using data from ftp server
             #Establishing FTP Connection
             try:
-                ftp = ftplib.FTP('ftp-cdc.dwd.de')
-                ftp.login(user='anonymous', passwd='')
+                ftp = ftplib.FTP(Settings.ftp_adress)
+                ftp.login(user=Settings.ftp_user, passwd=Settings.ftp_pass)
             except Exception:
-                print('Unable to connect to FTP server')
+                print('Unable to connect to FTP server.')
 
             ftp.cwd(path)
             ls = []
@@ -80,15 +77,15 @@ class FileExplorer:
         :return: function downloads a file from FTP server and saves it in the data/download folder
         """
         dirpath_downloaded = Settings.dirpath_downloaded
-        path_downloaded = dirpath_downloaded+'/'+filename #path to the downloaded file
+        path_downloaded = dirpath_downloaded+filename #path to the downloaded file
 
         #Downloading the fily only if the file wasn't downloaded before
         if not Path(path_downloaded).is_file():
             dirpath_ftp = self.generate_dirpath(char_name)
 
             try:
-                ftp = ftplib.FTP('ftp-cdc.dwd.de')
-                ftp.login(user='anonymous', passwd='')
+                ftp = ftplib.FTP(Settings.ftp_adress)
+                ftp.login(user=Settings.ftp_user, passwd=Settings.ftp_pass)
                 ftp.cwd(dirpath_ftp)
             except Exception:
                 print('Unable to connect to FTP server')
@@ -121,11 +118,11 @@ class FileExplorer:
         :return: path to the folder
         """
         dirpath_local = Settings.dirpath_offline
-        dirpath_ftp = Settings.dirpath_ftp
+        dirpath_ftp = Settings.ftp_dirpath
         dirpath_downloaded = Settings.dirpath_downloaded
 
         if type == 'repository':
-            if self.offline_data:
+            if Settings.use_offline_data:
                 dirpath = dirpath_local
             else:
                 dirpath = dirpath_ftp

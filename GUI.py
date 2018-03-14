@@ -23,8 +23,12 @@ sys.excepthook = excepthook
 
 class MyWindow(QMainWindow, layout):
     def __init__(self,parent=None):
+
+        QApplication.setApplicationName('')
         QMainWindow.__init__(self,parent)
         self.setupUi(self)
+
+        Settings.load_settings()
 
         self.dialog = MyDialog()
         self.error = MyError()
@@ -36,7 +40,9 @@ class MyWindow(QMainWindow, layout):
         self.statusUpdater.proces_percent.connect(self.progressBar.setValue)
 
         self.set_progressBar_value(0)
-        self.outputField.setText(Settings.output_path)
+
+        self.update_input_fields()
+
         self.show()
 
     def browse_file_clicked(self):
@@ -50,6 +56,13 @@ class MyWindow(QMainWindow, layout):
 
     def set_progressBar_value(self,value):
         self.progressBar.setValue(value)
+
+    def update_input_fields(self):
+        Settings.load_settings()
+        self.lonField.setText(str(Settings.lon))
+        self.latField.setText(str(Settings.lat))
+        self.yearField.setText(str(Settings.year))
+        self.outputField.setText(Settings.output_path)
 
     def startConversionButton_clicked(self):
         Settings.output_path = self.outputField.text()
@@ -87,41 +100,64 @@ class MyWindow(QMainWindow, layout):
     def showError(self):
         self.error.exec_()
 
+    def closeEvent(self, *args, **kwargs):
+        Settings.year = self.yearField.text()
+        Settings.lon = self.lonField.text()
+        Settings.lat = self.latField.text()
+        Settings.save_settings()
+
+    def inputField_edited(self):
+        pass
 
 class MyDialog(QDialog, dialog):
     def __init__(self,parent=None):
         QDialog.__init__(self,parent)
         self.setupUi(self)
+        self.output_directory = Settings.output_directory
+        self.offline_data_directory = Settings.dirpath_offline
+
+    def setupFields(self):
         self.offlineDataField.setText(Settings.dirpath_offline)
-        self.programDataField.setText(Settings.dirpath_data)
-        self.offlineDataFolderPath = Settings.dirpath_offline
-        self.programDataFolderPath = Settings.dirpath_data
+        self.outputPathField.setText(Settings.output_directory)
+
+        if Settings.use_offline_data:
+            self.offlineData_checkBox.setCheckState(2) #checked
+        else:
+            self.offlineData_checkBox.setCheckState(0) #unchecked
 
     def offlineDataFolderBrowse_clicked(self):
-        self.offlineDataFolderPath = QFileDialog.getExistingDirectoryUrl(self,caption='Choose folder',
+        self.offline_data_directory = QFileDialog.getExistingDirectoryUrl(self,caption='Choose folder',
                                                                          options=QFileDialog.ShowDirsOnly).toString()
-        self.offlineDataFolderPath = self.offlineDataFolderPath[8:]
-        self.offlineDataField.setText(self.offlineDataFolderPath)
+        self.offline_data_directory = self.offline_data_directory[8:]+'/'
+        self.offlineDataField.setText(self.offline_data_directory)
 
 
-    def programDataFieldBrowse_clicked(self):
-        self.programDataFolderPath = QFileDialog.getExistingDirectoryUrl(self,caption='Choose folder',
-                                                                         options=QFileDialog.ShowDirsOnly).toString()
-        self.programDataFolderPath = self.programDataFolderPath[8:]+'/'
-        self.programDataField.setText(self.programDataFolderPath)
+    def outputPathFieldBrowse_clicked(self):
+        self.output_directory = QFileDialog.getExistingDirectoryUrl(self, caption='Choose folder',
+                                                               options=QFileDialog.ShowDirsOnly).toString()
+        self.output_directory = self.output_directory[8:] + '/'
+        self.outputPathField.setText(self.output_directory)
 
     def accept(self):
         #Saving the settings
-        Settings.dirpath_data = self.programDataFolderPath
-        Settings.dirpath_offline = self.offlineDataFolderPath
+        Settings.output_directory = self.output_directory
+        Settings.output_path = self.output_directory+'Output.epw'
+        Settings.dirpath_offline = self.offline_data_directory
+
+        offline_data_checked = self.offlineData_checkBox.isChecked()
+
+        if offline_data_checked:
+            Settings.use_offline_data = True
+        else:
+            Settings.use_offline_data = False
+
+        Settings.save_settings()
+
         #Closing the window
         super().accept()
 
     def exec_(self):
-        #Updating the fileds. Otherwise they show incorrect information (when they have been edited but
-        #not saved before
-        self.offlineDataField.setText(Settings.dirpath_offline)
-        self.programDataField.setText(Settings.dirpath_data)
+        self.setupFields()
         super().exec_()
 
 class MyError(QDialog, error):
@@ -136,7 +172,7 @@ class ConversionProcess(QtCore.QThread):
         super().__init__(parent=parent)
 
     def run(self):
-        Preparator.Preparator()
+        # Preparator.Preparator()
 
         StationSearcher.StationSearcher()
 
