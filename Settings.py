@@ -122,6 +122,9 @@ output_directory = dirpath_program + '\output'
 output_filename = 'Output.epw'
 output_path = output_directory + '/' + output_filename
 
+cityname = 'Dresden'
+regionname = 'Sachsen'
+elevation = '113'
 
 def load_settings():
     try:
@@ -135,11 +138,12 @@ def save_settings():
     global use_offline_data, dirpath_offline
     global ftp_dirpath, ftp_adress, ftp_user, ftp_pass
     global output_directory
+    global cityname, regionname, elevation
 
     settings = {'year': year, 'lon': lon, 'lat': lat, 'use_offline_data': use_offline_data,
                 'dirpath_offline': dirpath_offline, 'ftp_dirpath':ftp_dirpath, 'ftp_adress':ftp_adress,
                 'ftp_user':ftp_user, 'ftp_pass': ftp_pass, 'output_directory': output_directory,
-                'output_path': output_path}
+                'output_path': output_path, 'cityname': cityname, 'regionname': regionname, 'elevation': elevation}
 
     try:
         pickle.dump(settings,open('programdata/settings.pickle','wb'))

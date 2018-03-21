@@ -200,16 +200,18 @@ class DataOutputer:
         """
         Function that prepares heading lines in the .epw file.
         """
-        cityname = "Musterstadt"
-        regionname = 'Sachsen'
+        cityname = Settings.cityname
+        regionname = Settings.regionname
         WMO = '123456'
 
 
         #calculating mean elevation
-        elev = 0
-        for station in self.station_list:
-            elev += float(station[5])
-        elev = str(elev/8)
+        # elev = 0
+        # for station in self.station_list:
+        #     elev += float(station[5])
+        # elev = str(elev/8)
+
+        elev = Settings.elevation
 
         #preparing text stating for which stations the weather data is collected
         c_text = 'Weather data obtained from following stations:'

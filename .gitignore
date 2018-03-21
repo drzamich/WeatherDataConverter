@@ -184,3 +184,9 @@ Test.py
 programdata/
 build/
 dist/
+qOSM/
+qgmap/
+*.spec
+programdata/
+gui/maps.py
+gui/gui-maps.py

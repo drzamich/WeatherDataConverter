@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>254</width>
-    <height>324</height>
+    <width>419</width>
+    <height>433</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -68,7 +68,47 @@
          <item row="2" column="1">
           <widget class="QLineEdit" name="yearField"/>
          </item>
+         <item row="3" column="0">
+          <widget class="QLabel" name="label">
+           <property name="text">
+            <string>City</string>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="1">
+          <widget class="QLineEdit" name="cityField"/>
+         </item>
+         <item row="4" column="0">
+          <widget class="QLabel" name="label_2">
+           <property name="text">
+            <string>Region</string>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="1">
+          <widget class="QLineEdit" name="regionField"/>
+         </item>
+         <item row="5" column="0">
+          <widget class="QLabel" name="label_3">
+           <property name="text">
+            <string>Elevation</string>
+           </property>
+          </widget>
+         </item>
+         <item row="5" column="1">
+          <widget class="QLineEdit" name="elevationField"/>
+         </item>
         </layout>
+       </item>
+       <item>
+        <widget class="QPushButton" name="pushButton">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="text">
+          <string>Google Maps widget</string>
+         </property>
+        </widget>
        </item>
       </layout>
      </widget>
@@ -76,7 +116,7 @@
     <item>
      <widget class="QGroupBox" name="fileBox">
       <property name="title">
-       <string>File</string>
+       <string>Output</string>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout_3">
        <item>
@@ -143,7 +183,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>254</width>
+     <width>419</width>
      <height>21</height>
     </rect>
    </property>

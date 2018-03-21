@@ -62,7 +62,13 @@ class MyWindow(QMainWindow, layout):
         self.lonField.setText(str(Settings.lon))
         self.latField.setText(str(Settings.lat))
         self.yearField.setText(str(Settings.year))
+
+        self.cityField.setText(Settings.cityname)
+        self.regionField.setText(Settings.regionname)
+        self.elevationField.setText(Settings.elevation)
+
         self.outputField.setText(Settings.output_path)
+
 
     def startConversionButton_clicked(self):
         Settings.output_path = self.outputField.text()
@@ -104,6 +110,9 @@ class MyWindow(QMainWindow, layout):
         Settings.year = self.yearField.text()
         Settings.lon = self.lonField.text()
         Settings.lat = self.latField.text()
+        Settings.elevation = self.elevationField.text()
+        Settings.cityname = self.cityField.text()
+        Settings.regionname = self.regionField.text()
         Settings.save_settings()
 
     def inputField_edited(self):
@@ -119,6 +128,11 @@ class MyDialog(QDialog, dialog):
     def setupFields(self):
         self.offlineDataField.setText(Settings.dirpath_offline)
         self.outputPathField.setText(Settings.output_directory)
+
+        self.ftpAdressField.setText(Settings.ftp_adress)
+        self.ftpUserField.setText(Settings.ftp_user)
+        self.ftpPassField.setText(Settings.ftp_pass)
+        self.ftpPathField.setText(Settings.ftp_dirpath)
 
         if Settings.use_offline_data:
             self.offlineData_checkBox.setCheckState(2) #checked
@@ -144,6 +158,11 @@ class MyDialog(QDialog, dialog):
         Settings.output_path = self.output_directory+'Output.epw'
         Settings.dirpath_offline = self.offline_data_directory
 
+        Settings.ftp_dirpath = self.ftpPathField.text()
+        Settings.ftp_user = self.ftpUserField.text()
+        Settings.ftp_adress = self.ftpAdressField.text()
+        Settings.ftp_pass = self.ftpPassField.text()
+
         offline_data_checked = self.offlineData_checkBox.isChecked()
 
         if offline_data_checked:
@@ -159,6 +178,12 @@ class MyDialog(QDialog, dialog):
     def exec_(self):
         self.setupFields()
         super().exec_()
+
+    def ftpDefaultsButton_clicked(self):
+        self.ftpAdressField.setText('ftp-cdc.dwd.de')
+        self.ftpUserField.setText('anonymous')
+        self.ftpPassField.setText('')
+        self.ftpPathField.setText('/pub/CDC/observations_germany/climate/hourly/')
 
 class MyError(QDialog, error):
     def __init__(self, parent=None):

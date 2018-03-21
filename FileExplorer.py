@@ -4,6 +4,7 @@ import os
 from pathlib import Path
 import zipfile
 
+
 class FileExplorer:
     """
     This class contains fuctions are are helpful for other classes in managing files and directories

@@ -63,7 +63,7 @@
     </size>
    </property>
    <property name="currentIndex">
-    <number>0</number>
+    <number>1</number>
    </property>
    <widget class="QWidget" name="General">
     <attribute name="title">
@@ -176,27 +176,111 @@
    </widget>
    <widget class="QWidget" name="tab_2">
     <attribute name="title">
-     <string>Advanced</string>
+     <string>FTP</string>
     </attribute>
     <widget class="QLabel" name="label_4">
-     <property name="enabled">
-      <bool>true</bool>
-     </property>
      <property name="geometry">
       <rect>
-       <x>5</x>
+       <x>20</x>
        <y>10</y>
-       <width>321</width>
-       <height>21</height>
+       <width>151</width>
+       <height>16</height>
       </rect>
      </property>
-     <property name="font">
-      <font>
-       <pointsize>11</pointsize>
-      </font>
+     <property name="text">
+      <string>Adress to the FTP server</string>
+     </property>
+    </widget>
+    <widget class="QLineEdit" name="ftpAdressField">
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>30</y>
+       <width>301</width>
+       <height>20</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_5">
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>70</y>
+       <width>151</width>
+       <height>16</height>
+      </rect>
      </property>
      <property name="text">
-      <string>Only change those fields if you know what to do!</string>
+      <string>Username</string>
+     </property>
+    </widget>
+    <widget class="QLineEdit" name="ftpUserField">
+     <property name="geometry">
+      <rect>
+       <x>80</x>
+       <y>70</y>
+       <width>241</width>
+       <height>20</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QLineEdit" name="ftpPassField">
+     <property name="geometry">
+      <rect>
+       <x>80</x>
+       <y>100</y>
+       <width>241</width>
+       <height>20</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_7">
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>130</y>
+       <width>151</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Path to the hourly data</string>
+     </property>
+    </widget>
+    <widget class="QLineEdit" name="ftpPathField">
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>150</y>
+       <width>301</width>
+       <height>20</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_6">
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>100</y>
+       <width>151</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Password</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="ftpDefaultsButton">
+     <property name="geometry">
+      <rect>
+       <x>90</x>
+       <y>180</y>
+       <width>141</width>
+       <height>23</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Reset to default</string>
      </property>
     </widget>
    </widget>
@@ -281,9 +365,26 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>ftpDefaultsButton</sender>
+   <signal>clicked()</signal>
+   <receiver>Settings</receiver>
+   <slot>ftpDefaultsButton_clicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>168</x>
+     <y>223</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>174</x>
+     <y>149</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>offlineDataFolderBrowse_clicked()</slot>
   <slot>outputPathFieldBrowse_clicked()</slot>
+  <slot>ftpDefaultsButton_clicked()</slot>
  </slots>
 </ui>
