@@ -101,9 +101,9 @@
         </layout>
        </item>
        <item>
-        <widget class="QPushButton" name="pushButton">
+        <widget class="QPushButton" name="googlePushButton">
          <property name="enabled">
-          <bool>false</bool>
+          <bool>true</bool>
          </property>
          <property name="text">
           <string>Google Maps widget</string>
@@ -329,6 +329,22 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>googlePushButton</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>googleButton_clicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>209</x>
+     <y>222</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>209</x>
+     <y>216</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>browse_file_clicked()</slot>
@@ -336,5 +352,6 @@
   <slot>startConversionButton_clicked()</slot>
   <slot>program_close()</slot>
   <slot>inputField_edited()</slot>
+  <slot>googleButton_clicked()</slot>
  </slots>
 </ui>

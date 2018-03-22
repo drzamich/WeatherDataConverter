@@ -17,7 +17,9 @@ The folder hierarchy there must be the same as on the FTP Server
 """
 use_offline_data = 0
 
-dirpath_offline = 'E:\\DOKUMENTY\\WeatherData\\'
+# dirpath_offline = 'E:\\DOKUMENTY\\WeatherData\\'
+
+dirpath_offline = ''
 
 """
 Variable storing path to the directory with hourly climate data on the FTP server
@@ -118,9 +120,9 @@ max_year = 2017
 #Output path for .epw file
 
 
-output_directory = dirpath_program + '\output'
+output_directory = dirpath_program + os.sep +'output'
 output_filename = 'Output.epw'
-output_path = output_directory + '/' + output_filename
+output_path = output_directory + os.sep + output_filename
 
 cityname = 'Dresden'
 regionname = 'Sachsen'

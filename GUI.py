@@ -10,9 +10,14 @@ import DataReader
 import DataConverter
 import DataOutputer
 import Reporter
+from PyQt5.QtWebChannel import QWebChannel
+from PyQt5.QtWidgets import QApplication, QWidget
+from PyQt5.QtCore import QUrl, pyqtSlot
+from PyQt5.QtWebEngineWidgets import QWebEngineView
 
 layout = uic.loadUiType('gui/gui.ui')[0]
 dialog = uic.loadUiType('gui/gui-dialog.ui')[0]
+google_maps_dialog = uic.loadUiType('gui/gui-maps.ui')[0]
 error = uic.loadUiType('gui/gui-error.ui')[0]
 
 if QtCore.QT_VERSION >= 0x50501:
@@ -23,7 +28,6 @@ sys.excepthook = excepthook
 
 class MyWindow(QMainWindow, layout):
     def __init__(self,parent=None):
-
         QApplication.setApplicationName('')
         QMainWindow.__init__(self,parent)
         self.setupUi(self)
@@ -32,6 +36,7 @@ class MyWindow(QMainWindow, layout):
 
         self.dialog = MyDialog()
         self.error = MyError()
+        self.googleMapsDialog = GoogleMapsDialog()
 
         self.proces = ConversionProcess()
         self.statusUpdater = StatusUpdater()
@@ -44,6 +49,7 @@ class MyWindow(QMainWindow, layout):
         self.update_input_fields()
 
         self.show()
+
 
     def browse_file_clicked(self):
         options = QFileDialog.Options()
@@ -118,6 +124,10 @@ class MyWindow(QMainWindow, layout):
     def inputField_edited(self):
         pass
 
+    def googleButton_clicked(self):
+        self.googleMapsDialog.exec_()
+        print('lala')
+
 class MyDialog(QDialog, dialog):
     def __init__(self,parent=None):
         QDialog.__init__(self,parent)
@@ -190,6 +200,35 @@ class MyError(QDialog, error):
         QDialog.__init__(self, parent)
         self.setupUi(self)
 
+
+class GoogleMapsDialog(QDialog, google_maps_dialog):
+    def __init__(self, parent=None):
+        QDialog.__init__(self, parent)
+        self.setupUi(self)
+        self.mapsWidget = GoogleMapsWidget(self)
+        self.mapsWidget.show()
+        self.mapsWidget.setFixedSize(350,350)
+
+class GoogleMapsWidget(QWidget):
+    def __init__(self,parent=None):
+        QWidget.__init__(self,parent)
+
+        self.web = QWebEngineView(self)
+        self.web.setFixedSize(350,350)
+
+        channel = QWebChannel(self.web.page())
+        self.web.page().setWebChannel(channel)
+        channel.registerObject('backend',self)
+
+        self.web.page().load(QUrl('file:///C:/Users/Micha%C5%82/PycharmProjects/WeatherData/map.html'))
+
+    @pyqtSlot(float, float, str, str, str)
+    def getpos(self, lat=51.05, lng=13.74, city='Dresden', region='Saxony', country='DE'):
+        print('Lat: '+str(lat))
+        print('Lon:' +str(lng))
+        print('City:' +city)
+        print('Region:' +region)
+        print('Country:' +country)
 
 class ConversionProcess(QtCore.QThread):
 
