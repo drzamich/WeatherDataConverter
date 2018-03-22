@@ -202,6 +202,7 @@ class DataOutputer:
         """
         cityname = Settings.cityname
         regionname = Settings.regionname
+        countryname = Settings.country
         WMO = '123456'
 
 
@@ -220,7 +221,7 @@ class DataOutputer:
 
 
         header = []
-        header.append('LOCATION,'+cityname+','+regionname+',DEU,DWD,'+WMO+','+self.lat+','+self.lon+',1.0,'+elev)
+        header.append('LOCATION,'+cityname+','+regionname+','+countryname+',DWD,'+WMO+','+self.lat+','+self.lon+',1.0,'+elev)
         header.append('DESIGN CONDITIONS,0')
         header.append('TYPICAL/EXTREME PERIODS,0')
         header.append(self.g_text)

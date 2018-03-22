@@ -2,7 +2,7 @@ from PyQt5.QtWidgets import *
 import PyQt5.QtGui as QtGui
 import PyQt5.QtCore as QtCore
 from PyQt5 import uic
-import sys, traceback
+import sys, traceback, os
 import Settings
 import Preparator
 import StationSearcher
@@ -12,7 +12,7 @@ import DataOutputer
 import Reporter
 from PyQt5.QtWebChannel import QWebChannel
 from PyQt5.QtWidgets import QApplication, QWidget
-from PyQt5.QtCore import QUrl, pyqtSlot
+from PyQt5.QtCore import QUrl, pyqtSlot, QFileInfo
 from PyQt5.QtWebEngineWidgets import QWebEngineView
 
 layout = uic.loadUiType('gui/gui.ui')[0]
@@ -44,6 +44,8 @@ class MyWindow(QMainWindow, layout):
         self.statusUpdater.proces_stage.connect(self.statusLabel.setText)
         self.statusUpdater.proces_percent.connect(self.progressBar.setValue)
 
+        self.googleMapsDialog.update_location.connect(self.update_input_fields)
+
         self.set_progressBar_value(0)
 
         self.update_input_fields()
@@ -71,7 +73,8 @@ class MyWindow(QMainWindow, layout):
 
         self.cityField.setText(Settings.cityname)
         self.regionField.setText(Settings.regionname)
-        self.elevationField.setText(Settings.elevation)
+        self.elevationField.setText(str(Settings.elevation))
+        self.countryField.setText(Settings.country)
 
         self.outputField.setText(Settings.output_path)
 
@@ -126,7 +129,6 @@ class MyWindow(QMainWindow, layout):
 
     def googleButton_clicked(self):
         self.googleMapsDialog.exec_()
-        print('lala')
 
 class MyDialog(QDialog, dialog):
     def __init__(self,parent=None):
@@ -202,33 +204,57 @@ class MyError(QDialog, error):
 
 
 class GoogleMapsDialog(QDialog, google_maps_dialog):
+    update_location = QtCore.pyqtSignal()
+
     def __init__(self, parent=None):
         QDialog.__init__(self, parent)
+        self.lat = Settings.lat
+        self.lng = Settings.lon
+        self.city = Settings.cityname
+        self.region = Settings.regionname
+        self.country = Settings.country
+        self.elevation = Settings.elevation
+
         self.setupUi(self)
-        self.mapsWidget = GoogleMapsWidget(self)
-        self.mapsWidget.show()
-        self.mapsWidget.setFixedSize(350,350)
 
-class GoogleMapsWidget(QWidget):
-    def __init__(self,parent=None):
-        QWidget.__init__(self,parent)
-
-        self.web = QWebEngineView(self)
-        self.web.setFixedSize(350,350)
-
-        channel = QWebChannel(self.web.page())
-        self.web.page().setWebChannel(channel)
+        self.mapsWidget = QWidget(self)
+        self.webView = QWebEngineView(self.mapsWidget)
+        channel = QWebChannel(self.webView.page())
+        self.webView.page().setWebChannel(channel)
         channel.registerObject('backend',self)
 
-        self.web.page().load(QUrl('file:///C:/Users/Micha%C5%82/PycharmProjects/WeatherData/map.html'))
+        self.mapsWidget.setFixedSize(350,350)
 
-    @pyqtSlot(float, float, str, str, str)
-    def getpos(self, lat=51.05, lng=13.74, city='Dresden', region='Saxony', country='DE'):
-        print('Lat: '+str(lat))
-        print('Lon:' +str(lng))
-        print('City:' +city)
-        print('Region:' +region)
-        print('Country:' +country)
+        htmlMapFile = QUrl.fromLocalFile(QFileInfo('map.html').absoluteFilePath())
+        self.webView.page().load(htmlMapFile)
+
+    def accept(self):
+        Settings.lat = self.lat
+        Settings.lon = self.lng
+        Settings.cityname = self.city
+        Settings.regionname = self.region
+        Settings.country = self.country
+        Settings.elevation = self.elevation
+        Settings.save_settings()
+
+        self.update_location.emit()
+
+        super().accept()
+
+    @pyqtSlot(float, float, str, str, str,float)
+    def getpos(self, lat=51.05, lng=13.74, city='Dresden', region='Saxony', country='DE',elevation = 113.0):
+        self.lat = format(lat, '.2f')
+        self.lng = format(lng, '.2f')git
+        self.city = city.lstrip()  #removing preceding whitespaces
+        self.region = region
+        self.country = country
+        self.elevation = format(elevation,'.2f')
+
+        # print('Lat: ' + str(lat))
+        # print('Lon:' + str(lng))
+        # print('City:' + city)
+        # print('Region:' + region)
+        # print('Country:' + country)
 
 class ConversionProcess(QtCore.QThread):
 

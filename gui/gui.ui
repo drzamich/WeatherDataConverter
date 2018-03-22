@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>419</width>
-    <height>433</height>
+    <width>462</width>
+    <height>492</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -24,7 +24,7 @@
     <item>
      <widget class="QGroupBox" name="locationBox">
       <property name="sizePolicy">
-       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+       <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
         <horstretch>0</horstretch>
         <verstretch>0</verstretch>
        </sizepolicy>
@@ -61,12 +61,9 @@
          <item row="2" column="0">
           <widget class="QLabel" name="yearLabel">
            <property name="text">
-            <string>Year</string>
+            <string>Elevation</string>
            </property>
           </widget>
-         </item>
-         <item row="2" column="1">
-          <widget class="QLineEdit" name="yearField"/>
          </item>
          <item row="3" column="0">
           <widget class="QLabel" name="label">
@@ -91,11 +88,14 @@
          <item row="5" column="0">
           <widget class="QLabel" name="label_3">
            <property name="text">
-            <string>Elevation</string>
+            <string>Country</string>
            </property>
           </widget>
          </item>
          <item row="5" column="1">
+          <widget class="QLineEdit" name="countryField"/>
+         </item>
+         <item row="2" column="1">
           <widget class="QLineEdit" name="elevationField"/>
          </item>
         </layout>
@@ -109,6 +109,60 @@
           <string>Google Maps widget</string>
          </property>
         </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item>
+     <widget class="QGroupBox" name="yearBox">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>50</height>
+       </size>
+      </property>
+      <property name="title">
+       <string>Year</string>
+      </property>
+      <layout class="QGridLayout" name="gridLayout_2">
+       <item row="0" column="0">
+        <layout class="QFormLayout" name="formLayout_3">
+         <property name="sizeConstraint">
+          <enum>QLayout::SetNoConstraint</enum>
+         </property>
+         <item row="0" column="1">
+          <widget class="QLineEdit" name="yearField">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="0">
+          <widget class="QLabel" name="label_7">
+           <property name="minimumSize">
+            <size>
+             <width>47</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="text">
+            <string>Year</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </item>
       </layout>
      </widget>
@@ -183,7 +237,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>419</width>
+     <width>462</width>
      <height>21</height>
     </rect>
    </property>
@@ -314,22 +368,6 @@
    </hints>
   </connection>
   <connection>
-   <sender>yearField</sender>
-   <signal>editingFinished()</signal>
-   <receiver>MainWindow</receiver>
-   <slot>inputField_edited()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>153</x>
-     <y>115</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>126</x>
-     <y>161</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>googlePushButton</sender>
    <signal>clicked()</signal>
    <receiver>MainWindow</receiver>
@@ -342,6 +380,22 @@
     <hint type="destinationlabel">
      <x>209</x>
      <y>216</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>elevationField</sender>
+   <signal>editingFinished()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>inputField_edited()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>153</x>
+     <y>115</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>126</x>
+     <y>161</y>
     </hint>
    </hints>
   </connection>
