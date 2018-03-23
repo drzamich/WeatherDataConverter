@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>MainWindow</class>
- <widget class="QMainWindow" name="MainWindow">
+ <class>WeatherDataConverter</class>
+ <widget class="QMainWindow" name="WeatherDataConverter">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -17,7 +17,13 @@
    </sizepolicy>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>Weather Data Conveter</string>
+  </property>
+  <property name="toolButtonStyle">
+   <enum>Qt::ToolButtonIconOnly</enum>
+  </property>
+  <property name="tabShape">
+   <enum>QTabWidget::Rounded</enum>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout">
@@ -274,7 +280,7 @@
   <connection>
    <sender>browseButton</sender>
    <signal>clicked()</signal>
-   <receiver>MainWindow</receiver>
+   <receiver>WeatherDataConverter</receiver>
    <slot>browse_file_clicked()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -290,7 +296,7 @@
   <connection>
    <sender>actionSettings</sender>
    <signal>triggered()</signal>
-   <receiver>MainWindow</receiver>
+   <receiver>WeatherDataConverter</receiver>
    <slot>settings_tab_clicked()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -306,7 +312,7 @@
   <connection>
    <sender>actionQuit</sender>
    <signal>triggered()</signal>
-   <receiver>MainWindow</receiver>
+   <receiver>WeatherDataConverter</receiver>
    <slot>close()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -322,7 +328,7 @@
   <connection>
    <sender>startConversionButton</sender>
    <signal>clicked()</signal>
-   <receiver>MainWindow</receiver>
+   <receiver>WeatherDataConverter</receiver>
    <slot>startConversionButton_clicked()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -338,7 +344,7 @@
   <connection>
    <sender>latField</sender>
    <signal>editingFinished()</signal>
-   <receiver>MainWindow</receiver>
+   <receiver>WeatherDataConverter</receiver>
    <slot>inputField_edited()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -354,7 +360,7 @@
   <connection>
    <sender>lonField</sender>
    <signal>editingFinished()</signal>
-   <receiver>MainWindow</receiver>
+   <receiver>WeatherDataConverter</receiver>
    <slot>inputField_edited()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -370,7 +376,7 @@
   <connection>
    <sender>googlePushButton</sender>
    <signal>clicked()</signal>
-   <receiver>MainWindow</receiver>
+   <receiver>WeatherDataConverter</receiver>
    <slot>googleButton_clicked()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -386,7 +392,7 @@
   <connection>
    <sender>elevationField</sender>
    <signal>editingFinished()</signal>
-   <receiver>MainWindow</receiver>
+   <receiver>WeatherDataConverter</receiver>
    <slot>inputField_edited()</slot>
    <hints>
     <hint type="sourcelabel">

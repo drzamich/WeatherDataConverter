@@ -142,12 +142,13 @@ def save_settings():
     global ftp_dirpath, ftp_adress, ftp_user, ftp_pass
     global output_directory
     global cityname, regionname, elevation, country
+    global min_rec
 
     settings = {'year': year, 'lon': lon, 'lat': lat, 'use_offline_data': use_offline_data,
                 'dirpath_offline': dirpath_offline, 'ftp_dirpath':ftp_dirpath, 'ftp_adress':ftp_adress,
                 'ftp_user':ftp_user, 'ftp_pass': ftp_pass, 'output_directory': output_directory,
                 'output_path': output_path, 'cityname': cityname, 'regionname': regionname, 'elevation': elevation,
-                'country': country}
+                'country': country, 'min_rec': min_rec}
 
     try:
         pickle.dump(settings,open('programdata/settings.pickle','wb'))

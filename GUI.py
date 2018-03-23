@@ -11,7 +11,7 @@ import DataConverter
 import DataOutputer
 import Reporter
 from PyQt5.QtWebChannel import QWebChannel
-from PyQt5.QtWidgets import QApplication, QWidget
+from PyQt5.QtWidgets import QApplication, QWidget, QStyleFactory, QStyle
 from PyQt5.QtCore import QUrl, pyqtSlot, QFileInfo
 from PyQt5.QtWebEngineWidgets import QWebEngineView
 
@@ -48,8 +48,8 @@ class MyWindow(QMainWindow, layout):
 
         self.set_progressBar_value(0)
 
+        self.setStyle(QStyleFactory.create("windowsvista"))
         self.update_input_fields()
-
         self.show()
 
 
@@ -146,6 +146,8 @@ class MyDialog(QDialog, dialog):
         self.ftpPassField.setText(Settings.ftp_pass)
         self.ftpPathField.setText(Settings.ftp_dirpath)
 
+        self.minRecField.setText(str(Settings.min_rec))
+
         if Settings.use_offline_data:
             self.offlineData_checkBox.setCheckState(2) #checked
         else:
@@ -174,6 +176,8 @@ class MyDialog(QDialog, dialog):
         Settings.ftp_user = self.ftpUserField.text()
         Settings.ftp_adress = self.ftpAdressField.text()
         Settings.ftp_pass = self.ftpPassField.text()
+
+        Settings.min_rec = int(self.minRecField.text())
 
         offline_data_checked = self.offlineData_checkBox.isChecked()
 
@@ -244,17 +248,11 @@ class GoogleMapsDialog(QDialog, google_maps_dialog):
     @pyqtSlot(float, float, str, str, str,float)
     def getpos(self, lat=51.05, lng=13.74, city='Dresden', region='Saxony', country='DE',elevation = 113.0):
         self.lat = format(lat, '.2f')
-        self.lng = format(lng, '.2f')git
+        self.lng = format(lng, '.2f')
         self.city = city.lstrip()  #removing preceding whitespaces
         self.region = region
         self.country = country
         self.elevation = format(elevation,'.2f')
-
-        # print('Lat: ' + str(lat))
-        # print('Lon:' + str(lng))
-        # print('City:' + city)
-        # print('Region:' + region)
-        # print('Country:' + country)
 
 class ConversionProcess(QtCore.QThread):
 

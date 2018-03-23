@@ -26,7 +26,7 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>Google Maps widget</string>
   </property>
   <widget class="QDialogButtonBox" name="buttonBox">
    <property name="enabled">

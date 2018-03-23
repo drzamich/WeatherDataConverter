@@ -7,7 +7,7 @@ import Reporter
 import Settings
 import GUI
 import sys
-from PyQt5.QtWidgets import QApplication
+from PyQt5.QtWidgets import QApplication, QStyleFactory
 
 
 if __name__ == '__main__':
@@ -17,6 +17,7 @@ if __name__ == '__main__':
 
     #Calling the GUI
     app = QApplication(sys.argv)
+    app.setStyle(QStyleFactory.create("windowsvista"))
     gui = GUI.MyWindow()
     sys.exit(app.exec_())
 
