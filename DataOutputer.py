@@ -236,7 +236,7 @@ class DataOutputer:
         """
         Funcion that merges all prepared lines together in a .ewp file and saves it in a defined place.
         """
-        file = open(self.output_path,"w")
+        file = open(self.output_path,"w",encoding='utf-8')
 
         for line in self.heading:
             file.write(str(line)+'\n')

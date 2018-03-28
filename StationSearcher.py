@@ -162,6 +162,8 @@ class StationSearcher(FileExplorer.FileExplorer):
         startdate = int(str(self.year) + '0101')
         enddate = int(str(self.year)+'1231')
         distancemax = sys.maxsize
+        # distancemax = 100000000000
+        beststation = []
 
         for station in station_list:
             #Checking if the given year is within the opration range of the station

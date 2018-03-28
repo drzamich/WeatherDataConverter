@@ -117,17 +117,21 @@ def setStatus(stage_name_new,stage_percent_new):
 min_year = 1958
 max_year = 2017
 
-#Output path for .epw file
-
-
-output_directory = dirpath_program + os.sep +'output'
+# Output path for .epw file
+output_directory = dirpath_program + os.sep +'output'+os.sep
 output_filename = 'Output.epw'
-output_path = output_directory + os.sep + output_filename
+output_path = output_directory + output_filename
 
 cityname = 'Dresden'
 regionname = 'Saxony'
 country = 'DE'
 elevation = '113'
+
+# Variable defines whether or not output values in reports/converted_data and reports/raw_data
+# are saved in a tabular form with headers describing values in columns and their units.
+# This takes longer computational time.
+tabular_reports = True
+
 
 def load_settings():
     try:
@@ -143,12 +147,13 @@ def save_settings():
     global output_directory
     global cityname, regionname, elevation, country
     global min_rec
+    global tabular_reports
 
     settings = {'year': year, 'lon': lon, 'lat': lat, 'use_offline_data': use_offline_data,
                 'dirpath_offline': dirpath_offline, 'ftp_dirpath':ftp_dirpath, 'ftp_adress':ftp_adress,
                 'ftp_user':ftp_user, 'ftp_pass': ftp_pass, 'output_directory': output_directory,
                 'output_path': output_path, 'cityname': cityname, 'regionname': regionname, 'elevation': elevation,
-                'country': country, 'min_rec': min_rec}
+                'country': country, 'min_rec': min_rec, 'tabular_reports': tabular_reports}
 
     try:
         pickle.dump(settings,open('programdata/settings.pickle','wb'))

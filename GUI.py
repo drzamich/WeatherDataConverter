@@ -14,11 +14,14 @@ from PyQt5.QtWebChannel import QWebChannel
 from PyQt5.QtWidgets import QApplication, QWidget, QStyleFactory, QStyle
 from PyQt5.QtCore import QUrl, pyqtSlot, QFileInfo
 from PyQt5.QtWebEngineWidgets import QWebEngineView
+from PyQt5.QtGui import QFont
 
 layout = uic.loadUiType('gui/gui.ui')[0]
 dialog = uic.loadUiType('gui/gui-dialog.ui')[0]
 google_maps_dialog = uic.loadUiType('gui/gui-maps.ui')[0]
 error = uic.loadUiType('gui/gui-error.ui')[0]
+
+font_style = 'MS Schell DLG 2'
 
 if QtCore.QT_VERSION >= 0x50501:
     def excepthook(type_, value, traceback_):
@@ -31,7 +34,7 @@ class MyWindow(QMainWindow, layout):
         QApplication.setApplicationName('')
         QMainWindow.__init__(self,parent)
         self.setupUi(self)
-
+        self.setFont(QFont(font_style,8))
         Settings.load_settings()
 
         self.dialog = MyDialog()
@@ -134,6 +137,7 @@ class MyDialog(QDialog, dialog):
     def __init__(self,parent=None):
         QDialog.__init__(self,parent)
         self.setupUi(self)
+        self.setFont(QFont(font_style,8))
         self.output_directory = Settings.output_directory
         self.offline_data_directory = Settings.dirpath_offline
 
@@ -152,6 +156,11 @@ class MyDialog(QDialog, dialog):
             self.offlineData_checkBox.setCheckState(2) #checked
         else:
             self.offlineData_checkBox.setCheckState(0) #unchecked
+
+        if Settings.tabular_reports:
+            self.tabular_checkBox.setCheckState(2) #checked
+        else:
+            self.tabular_checkBox.setCheckState(0) #unchecked
 
     def offlineDataFolderBrowse_clicked(self):
         self.offline_data_directory = QFileDialog.getExistingDirectoryUrl(self,caption='Choose folder',
@@ -180,11 +189,17 @@ class MyDialog(QDialog, dialog):
         Settings.min_rec = int(self.minRecField.text())
 
         offline_data_checked = self.offlineData_checkBox.isChecked()
+        tabular_reports_checked = self.tabular_checkBox.isChecked()
 
         if offline_data_checked:
             Settings.use_offline_data = True
         else:
             Settings.use_offline_data = False
+
+        if tabular_reports_checked:
+            Settings.tabular_reports = True
+        else:
+            Settings.tabular_reports = False
 
         Settings.save_settings()
 
@@ -218,9 +233,8 @@ class GoogleMapsDialog(QDialog, google_maps_dialog):
         self.region = Settings.regionname
         self.country = Settings.country
         self.elevation = Settings.elevation
-
         self.setupUi(self)
-
+        self.setFont(QFont(font_style,8))
         self.mapsWidget = QWidget(self)
         self.webView = QWebEngineView(self.mapsWidget)
         channel = QWebChannel(self.webView.page())

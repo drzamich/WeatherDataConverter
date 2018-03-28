@@ -22,27 +22,32 @@ class Reporter:
         self.lon = Settings.lon
         self.lat = Settings.lat
 
-
         self.station_list = station_list
         self.missing_dates = missing_list
         self.missing_entries = missing_entries_list
         self.extracted_data = extracted_data
         self.converted_data = converted_data
 
-        #Create subfolder in the reports/ directory
+        # Create subfolder in the reports/ directory
         self.create_folder()
 
-        #Generate report txt file with staions list and number of missing values per climate element
+        # Generate report txt file with staions list and number of missing values per climate element
         self.generate_report()
 
-        #Generate files with missing periods per climate element
+        # Generate files with missing periods per climate element
         self.save_missing_values()
 
-        #Generate txt files with raw data extracted from stations
-        self.save_extracted_data()
+        # Generate txt files with raw data extracted from stations
+        if Settings.tabular_reports:
+            self.save_extracted_data_table()
+        else:
+            self.save_extracted_data()
 
-        #Generate txt files with intepolated and recalculated data
-        self.save_converted_data()
+        # Generate txt files with interpolated and recalculated data
+        if Settings.tabular_reports:
+            self.save_converted_data_table()
+        else:
+            self.save_converted_data()
 
         setStatus('Process completed', 100)
     def create_folder(self):

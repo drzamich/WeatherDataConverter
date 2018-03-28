@@ -465,7 +465,7 @@ class DataConverter:
             dir_nor = Irradiance.disc(glob_instant,zenith,day_of_year)
             # the value of direct normal irradiance is saved in the dir_nor table under the key 'dni'
             direct_instant = dir_nor['dni']
-            direct_instant = "{0:.2f}".format(direct_instant) #formatting the float number
+            direct_instant = "{0:.2f}".format(float(direct_instant)) #formatting the float number
             direct_instant = int(round(float(direct_instant),0))
 
             #adding the calculated value to the list
