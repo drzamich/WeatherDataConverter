@@ -117,6 +117,8 @@ class DataOutputer:
                         count += 1
                         sum += temp
 
+                # If all values for ground temperature were missing, no average is calculated and the temperature
+                # is marked as missing
                 if count != 0:
                     average = sum / count
                     average = round(average, 1)

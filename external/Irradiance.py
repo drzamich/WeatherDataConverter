@@ -13,7 +13,6 @@ Therefore this module is less universal but the output does not change in this s
 
 import logging
 
-import datetime
 from collections import OrderedDict
 from functools import partial
 
@@ -22,7 +21,7 @@ import numpy as np
 
 from pvlib import tools
 from pvlib import solarposition
-import atmosphere
+from external import atmosphere
 
 pvl_logger = logging.getLogger('pvlib')
 

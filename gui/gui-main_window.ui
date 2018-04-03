@@ -354,38 +354,6 @@
    </hints>
   </connection>
   <connection>
-   <sender>latField</sender>
-   <signal>editingFinished()</signal>
-   <receiver>WeatherDataConverter</receiver>
-   <slot>inputField_edited()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>153</x>
-     <y>89</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>126</x>
-     <y>161</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>lonField</sender>
-   <signal>editingFinished()</signal>
-   <receiver>WeatherDataConverter</receiver>
-   <slot>inputField_edited()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>153</x>
-     <y>63</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>126</x>
-     <y>161</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>googlePushButton</sender>
    <signal>clicked()</signal>
    <receiver>WeatherDataConverter</receiver>
@@ -401,29 +369,12 @@
     </hint>
    </hints>
   </connection>
-  <connection>
-   <sender>elevationField</sender>
-   <signal>editingFinished()</signal>
-   <receiver>WeatherDataConverter</receiver>
-   <slot>inputField_edited()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>153</x>
-     <y>115</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>126</x>
-     <y>161</y>
-    </hint>
-   </hints>
-  </connection>
  </connections>
  <slots>
   <slot>browse_file_clicked()</slot>
   <slot>settings_tab_clicked()</slot>
   <slot>startConversionButton_clicked()</slot>
   <slot>program_close()</slot>
-  <slot>inputField_edited()</slot>
   <slot>googleButton_clicked()</slot>
  </slots>
 </ui>

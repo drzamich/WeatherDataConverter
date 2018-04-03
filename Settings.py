@@ -1,28 +1,25 @@
+"""
+This module contains default input parameters (settings) for the program, as well, as some
+defined variables that are used by various modules of the program.
+"""
 import os
 import pickle
-
-#Input parameters
-year = 2016
-lon = 13.34
-lat = 50.91
-
 
 """
 Variable defining if the program can use weather data previously downloaded from the FTP server
 and stored on the local drive. If the value is set to 0, when searching for weather data, program will
 connect to the DWD FTP server and download files from there. Therefore internet connection is required.
 
-If the value is set to 1, program will search directory defined in dirpath_offline in search for weather data
-The folder hierarchy there must be the same as on the FTP Server
+If the value is set to 1, program will search directory defined in dirpath_offline in search for weather data.
+Default value for dirpath_offline is empty and has to be set by the user.
+The folder hierarchy there must be the same as on the FTP Server.
 """
 use_offline_data = 0
-
-# dirpath_offline = 'E:\\DOKUMENTY\\WeatherData\\'
 
 dirpath_offline = ''
 
 """
-Variable storing path to the directory with hourly climate data on the FTP server
+Variables storing information about details of the connection to the DWD ftp server.
 """
 ftp_dirpath = '/pub/CDC/observations_germany/climate/hourly/'
 
@@ -37,6 +34,14 @@ Variable defining place on the hard drive where all the data will be stored. Tha
 reports etc
 """
 dirpath_program = os.getcwd()
+
+dirpath_downloaded = dirpath_program + os.sep + 'data' + os.sep + 'download' + os.sep
+
+output_directory = dirpath_program + os.sep +'output'+os.sep
+
+output_filename = 'Output.epw'
+
+output_path = output_directory + output_filename
 
 """
 Variable controlling if the testing mode is on. If it's off, the program generates data basing on the year and 
@@ -69,78 +74,54 @@ observedCharacteristics = [
     ['wind', 'FF',[3,4]]                            #7
 ]
 
-#Path to the directory with files downloaded from the FTP server
-dirpath_downloaded = dirpath_program + '/data/download/'
-
-#Format of the timestamp used in the program (based on the format used in the weather data)
+"""
+Format of the timestamp used in the program (based on the format used in the weather data filenames ETC)
+"""
 fmt = '%Y%m%d%H'
 
-#Minimum number of data records in the given year (maximum 24*366 = 8784) for which the
-#data set is perceived as valid. If the station provides us with the data set with lower number of records
-#for the given year, it's perceivd as invalid and added to the "forbidden" list
+"""
+Minimum number of data records in the given year (maximum 24*366 = 8784) for which the
+data set is perceived as valid. If the station provides us with the data set with lower number of records
+for the given year, it's perceived as invalid and added to the "forbidden" list.
+
+"""
 min_rec = 3000
 
+"""
+Variable defines whether or not output values in reports/converted_data and reports/raw_data
+are saved in a tabular form with headers describing values in columns and their units.
+This takes longer computational time.
+"""
+tabular_reports = True
 
-headers_raw_data = [
-    ['Date','Air Temp. [*C]','Rel. humid. [%]'],
-    ['Date','Total cloud cover [1/8]'],
-    ['Date','Hrly precipitation height [mm]'],
-    ['Date','Mean sea level pressure [hPa]','Pressure at station height [hPa]'],
-    ['Date','T at depth [*C]: 2 cm','5 cm','10 cm','20 cm','50 cm','100 cm'],
-    ['Date','Hrly longwave dwnwrd rad. [J/cm2]','Hrly diff solar rad. [J/cm2]','Hrly solar incoming rad. [J/cm2]',
-     'Sunshine duration [min]','Zenith angle [*]'],
-    ['Date','Sunshine duration [min]'],
-    ['Date','Wind speed [m/s]','Wind direction [Grad]']
-]
 
-headers_converted_data = [
-    ['Date','(r)Air Temp. [*C]','(r)Rel. humid. [%]','Dry Bulb Temp. [*C]','Dew Point Temp [*C]', 'Rel. Humid. [%]'],
-    ['Date','(r)Total cloud cover [1/8]','Total Sky Cover [1/10]'],
-    ['Date','(r)Hrly precipitation height [mm]'],
-    ['Date','(r)Mean sea level pressure [hPa]','(r)Pressure at station height [hPa]','Atmosphetic Station Pressure [Pa]'],
-    ['Date','(r)T at depth [*C]: 2 cm','(r)5 cm','(r)10 cm','(r)20 cm','(r)50 cm','(r)100 cm'],
-    ['Date','(r)Hrly longwave dwnwrd rad. [J/cm2]','(r)Hrly diff solar rad. [J/cm2]','(r)Hrly solar incoming rad. [J/cm2]',
-     '(r)Sunshine duration [min]','(r)Zenith angle [*]','Diff. Horiz. Irrad. [W/m2]','Glob. Horiz. Irrad. [W/m2]',
-     'Dir. Norm. Irrad. [W/m2]','Horiz. Infrared Radiat. Intens. [W/m2]'],
-    ['Date','(r)Sunshine duration [min]'],
-    ['Date','(r)Wind speed [m/s]','(r)Wind direction [Grad]','Wind Direction [*]','Wind Speed [m/s]']
-]
-
-stage_name = 'Click START to proceed.'
-stage_percent = 0
-
-def setStatus(stage_name_new,stage_percent_new):
-    global stage_name
-    stage_name = stage_name_new
-    stage_percent = stage_percent_new
-
-min_year = 1958
-max_year = 2017
-
-# Output path for .epw file
-output_directory = dirpath_program + os.sep +'output'+os.sep
-output_filename = 'Output.epw'
-output_path = output_directory + output_filename
-
+"""
+Default input parameters
+"""
+year = 2016
+lon = 13.34
+lat = 50.91
 cityname = 'Dresden'
 regionname = 'Saxony'
 country = 'DE'
 elevation = '113'
 
-# Variable defines whether or not output values in reports/converted_data and reports/raw_data
-# are saved in a tabular form with headers describing values in columns and their units.
-# This takes longer computational time.
-tabular_reports = True
-
 
 def load_settings():
+    """
+    Function that reads previously saved settings from the serialization file.
+    """
     try:
-        settings = pickle.load(open('programdata/settings.pickle','rb'))
+        settings = pickle.load(open('programdata'+os.sep+'settings.pickle','rb'))
         globals().update(settings)
     except:
         pass
 
+
 def save_settings():
+    """
+    Function that saves settings for use in the following runs of the program.
+    """
     global year, lon, lat
     global use_offline_data, dirpath_offline
     global ftp_dirpath, ftp_adress, ftp_user, ftp_pass
@@ -156,6 +137,6 @@ def save_settings():
                 'country': country, 'min_rec': min_rec, 'tabular_reports': tabular_reports}
 
     try:
-        pickle.dump(settings,open('programdata/settings.pickle','wb'))
+        pickle.dump(settings,open('programdata'+os.sep+'settings.pickle','wb'))
     except:
         pass

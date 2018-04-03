@@ -1,12 +1,14 @@
-import datetime
 import calendar
-import Irradiance
-import math
 import copy
-import Settings
+import datetime
+import math
+
 import Reporter
+import Settings
+from external import Irradiance
 
 fmt = Settings.fmt
+
 
 class DataConverter:
     """
@@ -18,8 +20,8 @@ class DataConverter:
         Reporter.setStatus('Converting data...',21)
         self.converted_data = copy.deepcopy(Reporter.extracted_data)
         self.year = Settings.year
-        self.missing_list =[]           #list that contains data periods missing from raw data sets
-        self.missing_entries_list = []  #list that contains numbers of entries missing from raw data sets
+        self.missing_list =[]           # list that contains data periods missing from raw data sets
+        self.missing_entries_list = []  # list that contains numbers of entries missing from raw data sets
         self.prepare_data()
         self.calculate_data()
 
@@ -33,35 +35,34 @@ class DataConverter:
         recalculate them in any way.
         """
 
-        #Removing duplicated entries (entries with same dates)
+        # Removing duplicated entries (entries with same dates)
         print('-Remove duplicates')
         Reporter.setStatus('Converting data... removiung duplicates', 25)
         self.remove_duplicates()
 
-        #Inserting entries for which no entries exist in the original data set (values marked as missing: -999)
+        # Inserting entries for which no entries exist in the original data set (values marked as missing: -999)
         print('-Insert missing dates')
         Reporter.setStatus('Converting data... inserting missing dates', 27)
         self.insert_missing_dates()
 
-        #Saving extracted data set (before interpolation) for future saving in the report file
+        # Saving extracted data set (before interpolation) for future saving in the report file
         Reporter.extracted_data = copy.deepcopy(self.converted_data)
 
         print('-Interpolate data')
         Reporter.setStatus('Converting data... interpolation', 30)
         self.interpolate_data()
 
-        #Removing extra entries for leap year (continous set, no gaps!)
+        # Removing extra entries for leap year (continous set, no gaps!)
         print('-Strip leap year')
         Reporter.setStatus('Converting data... stripping leap year', 40)
         self.strip_leap_year()
-
 
     def calculate_data(self):
         """
         Set of functions that reformat and recalculate values of climate elements therefore to state needed by the epw
         file format.
         """
-        #Converting and calculating values for temperature and relative humidity
+        # Converting and calculating values for temperature and relative humidity
         print('-Convert air temp data')
         Reporter.setStatus('Calculating data... air temperature', 42)
         self.convert_air_temperature_data()
@@ -71,26 +72,25 @@ class DataConverter:
         Reporter.setStatus('Calculating data... pressure', 44)
         self.convert_pressure_data()
 
-        #Converting and calculating values of irradiance
+        # Converting and calculating values of irradiance
         print('-Convert solar data')
         Reporter.setStatus('Calculating data... solar data', 46)
         self.convert_solar_data()
 
-        #Converting values of cloudiness from oktas to tenths
+        # Converting values of cloudiness from oktas to tenths
         print('-Convert cloudiness data')
         Reporter.setStatus('Calculating data... cloudiness', 50)
         self.convert_cloudiness_data()
 
-        #Converting values of wind data
+        # Converting values of wind data
         print('-Convert wind data')
         Reporter.setStatus('Calculating data... wind', 54)
         self.convert_wind_data()
 
-        #Calculating values of horizontal infrared irradiance
+        # Calculating values of horizontal infrared irradiance
         print('-Calculate horizontal infrared')
         Reporter.setStatus('Calculating data... horizontal infrared', 56)
         self.calculate_horizontal_infrared()
-
 
     def remove_duplicates(self):
         """
@@ -102,9 +102,9 @@ class DataConverter:
                 if index != 0:
                     date1 = data_list[index - 1][0]
                     date2 = data_list[index][0]
-                    #If dates of two entries in a row are the same
+                    # If dates of two entries in a row are the same
                     if date1 == date2:
-                        #Deleting one of them
+                        # Deleting one of them
                         data_list.pop(index)
 
     def insert_missing_dates(self):
@@ -114,45 +114,45 @@ class DataConverter:
         :return: data set with continous entries (there exist an entry for each hour of the year)
         """
         for data_list in self.converted_data:
-            missing_list_entry = []  #list for storing missing entries' time periods
-            missing_entries = 0      #variable for stroring number of missing entries
-            size = len(data_list[0]) #number of columns in the data set
+            missing_list_entry = []  # list for storing missing entries' time periods
+            missing_entries = 0      # variable for stroring number of missing entries
+            size = len(data_list[0]) # number of columns in the data set
 
             for index, entry in enumerate(data_list):
 
                 if index == 0:
-                    #For the first entry on the list it is checked if it's date is 01 Jan YYYY 00:00
-                    #If the date does not end with specific string, it means that the first entry has different date
+                    # For the first entry on the list it is checked if it's date is 01 Jan YYYY 00:00
+                    # If the date does not end with specific string, it means that the first entry has different date
                     if not data_list[0][0].endswith('010100'):
-                        #Adding 1 to the missing entries number
+                        # Adding 1 to the missing entries number
                         missing_entries += 1
-                        new_entry = [-999] * size   #new entry has all values in all columns except first (the one that
-                                                    #stores the date set to -999 (marked as missing)
+                        new_entry = [-999] * size   # new entry has all values in all columns except first (the one that
+                                                    # stores the date set to -999 (marked as missing)
 
-                        #Saving in the list with missing time ranges infromation about the time range
+                        # Saving in the list with missing time ranges infromation about the time range
                         missing_list_entry.append('before:')
                         missing_list_entry.append(data_list[0][0])
 
-                        #Inserting the date of 1th Jan of given year to the new entry in the 1st column
+                        # Inserting the date of 1th Jan of given year to the new entry in the 1st column
                         year = data_list[0][0][0:4]
                         new_date = year + '010100'
                         new_entry[0] = new_date
-                        #Inserting the new entry to the original list
+                        # Inserting the new entry to the original list
                         data_list.insert(0, new_entry)
 
                 elif index != 0 and index != (len(data_list) - 1):
-                    #For entries that aren't 1st or last on the list, it is checked a time difference between two
-                    #neighbouring entries
+                    # For entries that aren't 1st or last on the list, it is checked a time difference between two
+                    # neighbouring entries
                     date1 = data_list[index - 1][0]
                     date2 = data_list[index][0]
                     tstamp1 = datetime.datetime.strptime(date1, fmt)
                     tstamp2 = datetime.datetime.strptime(date2, fmt)
 
-                    #Calculating time difference in hours
+                    # Calculating time difference in hours
                     td = tstamp2 - tstamp1
                     td_hours = td.total_seconds() / 3600
 
-                    # if the time diff between dates is bigger than 1 hour, that means there is a missing value
+                    # Ff the time diff between dates is bigger than 1 hour, that means there is a missing value
                     if td_hours > 1.0:
                         # adding number of missing entries to the reporting variables
                         missing_entries += td_hours
@@ -160,7 +160,7 @@ class DataConverter:
 
                         # for each missing entry, a new entry is created
                         for x in range(1, int(td_hours)):
-                            #calculating the new date
+                            # calculating the new date
                             tstamp_new = tstamp1 + datetime.timedelta(hours=x)
                             date_new = datetime.datetime.strftime(tstamp_new, fmt)
 
@@ -168,26 +168,26 @@ class DataConverter:
                             # stores the date set to -999 (marked as missing)
                             new_entry = [-999] * size
 
-                            #Inserting new date in the first column of the new entry
+                            # Inserting new date in the first column of the new entry
                             new_entry[0] = date_new
 
-                            #Inserting new entry in the original data set
+                            # Inserting new entry in the original data set
                             data_list.insert((index - 1) + x, new_entry)
 
                 elif index == (len(data_list) - 1):
-                    #For the last element on the list it is checked if it's date is 31st Dec YYYY 23:00
+                    # For the last element on the list it is checked if it's date is 31st Dec YYYY 23:00
                     last_date = data_list[len(data_list) - 1][0]
-                    #If the last date does not end with specific string, that means that the last entry has
-                    #different date
+                    # If the last date does not end with specific string, that means that the last entry has
+                    # different date
                     if not str(last_date).endswith('123123'):
-                        #Ssving the missing entries time range to the reporting list
+                        # Saving the missing entries time range to the reporting list
                         missing_list_entry.append('after:')
                         missing_list_entry.append(last_date)
                         tstamp1 = datetime.datetime.strptime(last_date, fmt)
                         tstamp_new = tstamp1
                         while True:
-                            #Adding one hour to the last date on the data list and setting it as date of the new entry
-                            #As long as the new date won't be 31st Dec YYYY 23:00
+                            # Adding one hour to the last date on the data list and setting it as date of the new entry
+                            # As long as the new date won't be 31st Dec YYYY 23:00
 
                             # new entry has all values in all columns except first (the one that
                             # stores the date set to -999 (marked as missing)
@@ -196,15 +196,15 @@ class DataConverter:
                             tstamp_new = tstamp_new + datetime.timedelta(hours=a)
                             newdate = datetime.datetime.strftime(tstamp_new, fmt)
 
-                            #Inserting new date in the first column of the new entry
+                            # Inserting new date in the first column of the new entry
                             new_entry[0] = newdate
 
-                            #Inserting new entry in the original data set
+                            # Inserting new entry in the original data set
                             data_list.insert(len(data_list) + 1, new_entry)
                             a += 1
                             missing_entries += 1
 
-                            #Breaking the loop when reaching last hour of the year
+                            # Breaking the loop when reaching last hour of the year
                             if newdate.endswith('123123'): break
 
             self.missing_entries_list.append(missing_entries)
@@ -217,8 +217,8 @@ class DataConverter:
         """
         for index,data in enumerate(self.converted_data):
 
-            #Saving indexes of rows with missing data
-            #This is done for each column separately
+            # Saving indexes of rows with missing data
+            # This is done for each column separately
             missing_values = [[]]
             for i, row in enumerate(data):
                 for column, item in enumerate(row):
@@ -229,14 +229,13 @@ class DataConverter:
                         elif len(missing_values) > column:
                             missing_values[column].append(i)
 
-
-            #for air temp, rel humidity, soil temperature and solar data, interpolation is made based
-            #on the values from neighbouring days
+            # for air temp, rel humidity, soil temperature and solar data, interpolation is made based
+            # on the values from neighbouring days
             if index==0 or index==4 or index==5:
                 self.interpolate_by_average(data,missing_values)
 
-            #for cloudiness, precipitation, pressure and wind data, intepolation is made direcly based on the values
-            #nearest to the missing data
+            # for cloudiness, precipitation, pressure and wind data, interpolation is made directly based on the values
+            # nearest to the missing data
             elif index == 2 or index== 3 or index == 6 or index == 7:
                 self.interpolate_directly(data,missing_values)
 
@@ -248,7 +247,7 @@ class DataConverter:
         """
         for column, set in enumerate(missing_values):
             for index in set:
-                #looking for indexes of entries with available data, which will be a base for interpolation
+                # looking for indexes of entries with available data, which will be a base for interpolation
                 lower_index = -1
                 upper_index = 9999
 
@@ -262,24 +261,23 @@ class DataConverter:
                         upper_index = j
                         break
 
-                #set consiss all of missing values
+                # set consiss all of missing values
                 if lower_index == -1 and upper_index == 9999:
                     break
 
-                #missing values at the start of set
-                #new value is equal to the next non-missing value (24h gap)
+                # missing values at the start of set
+                # new value is equal to the next non-missing value (24h gap)
                 elif lower_index == -1 and upper_index != 9999:
                     data[index][column] = data[upper_index][column]
 
-                #missing values at the end of the set
-                #new value is equal to the last non-missing value (24h gap)
+                # missing values at the end of the set
+                # new value is equal to the last non-missing value (24h gap)
                 elif lower_index != -1 and upper_index == 9999:
                     data[index][column] = data[lower_index][column]
 
-                #missing values in the middle of the set
+                # missing values in the middle of the set
                 else:
                     data[index][column] = (float(data[upper_index][column]) + float(data[lower_index][column]))/2
-
 
     def interpolate_directly(self,data,missing_values):
         """
@@ -289,7 +287,7 @@ class DataConverter:
         for column,set in enumerate(missing_values):
             for index in set:
 
-                #looking for indexes of entries with available data, which will be a base for interpolation
+                # looking for indexes of entries with available data, which will be a base for interpolation
                 lower_index = -1
                 upper_index = 9999
 
@@ -303,21 +301,21 @@ class DataConverter:
                         upper_index = j
                         break
 
-                #set consiss all of missing values
+                # set consiss all of missing values
                 if lower_index == -1 and upper_index == 9999:
                     break
 
-                #missing values at the start of set
-                #new value is equal to the first non-missing value
+                # missing values at the start of set
+                # new value is equal to the first non-missing value
                 elif lower_index == -1 and upper_index != 9999:
                     data[index][column] = data[upper_index][column]
 
-                #missing values at the end of the set
-                #new value is equal to the last non-missing value
+                # missing values at the end of the set
+                # new value is equal to the last non-missing value
                 elif lower_index != -1 and upper_index == 9999:
                     data[index][column] = data[lower_index][column]
 
-                #missing values in the middle of the set
+                # missing values in the middle of the set
                 else:
                     lower_val = float(data[lower_index][column])
                     upper_val = float(data[upper_index][column])
@@ -332,7 +330,6 @@ class DataConverter:
                     new_val = format(new_val,'.1f')
                     data[index][column] = new_val
 
-
     def strip_leap_year(self):
         """
         Function responsible for removine excessive number of entries from the data set which results from the fact
@@ -343,14 +340,14 @@ class DataConverter:
         """
         if calendar.isleap(self.year):
             for data_list in self.converted_data:
-                boundary_date = str(self.year) + '022823'  #boundary date is the 23:00 28th Feb
+                boundary_date = str(self.year) + '022823'  # boundary date is the 23:00 28th Feb
                 tstamp2 = datetime.datetime.strptime(boundary_date, fmt)
                 for item in data_list:
                     date = str(item[0])
                     tstamp1 = datetime.datetime.strptime(date, fmt)
                     if tstamp1 > tstamp2:
-                        #for each entry with date after the boundary date
-                        #one day is added to the original date, therefore moving all entries one day forward
+                        # for each entry with date after the boundary date
+                        # one day is added to the original date, therefore moving all entries one day forward
                         tstamp3 = tstamp1 + datetime.timedelta(days=1)
                         date_new = datetime.datetime.strftime(tstamp3, fmt)
                         item[0] = date_new
@@ -389,10 +386,9 @@ class DataConverter:
             elif mark == 0:
                 dew_point = self.dew_point_temperature(temp,humidity)
 
-
-            item.append(dry_bulb)       #item[3]
-            item.append(dew_point)      #item[4]
-            item.append(rel_humidity)   #item[5]
+            item.append(dry_bulb)       # item[3]
+            item.append(dew_point)      # item[4]
+            item.append(rel_humidity)   # item[5]
 
     def convert_pressure_data(self):
         """
@@ -400,7 +396,7 @@ class DataConverter:
         """
         pressure_data = self.converted_data[3]
         for item in pressure_data:
-            press = int(float(item[2]))*100 #[Pa]
+            press = int(float(item[2]))*100  # [Pa]
 
             if press > 120000 or press < 31000 or press == -999:
                 atm_pressure =  999999
@@ -417,13 +413,13 @@ class DataConverter:
         for item in wind_data:
             speed = float(item[1])
             speed = int(round(speed,0))
-            dir = int(float(item[2]))
-            dir = int(0.9*dir)  #grad to degree
+            direction = int(float(item[2]))
+            direction = int(0.9*direction)  # grad to degree
 
-            if dir <0 or dir >360 or dir == -999:
+            if direction < 0 or direction > 360 or direction == -999:
                 wind_dir = 999
             else:
-                wind_dir = dir
+                wind_dir = direction
 
             if speed < 0 or speed > 40 or speed == -999:
                 wind_speed = 999
@@ -462,7 +458,7 @@ class DataConverter:
             zenith = float(item[5])
 
             #Calculating the direct normal irradiance using the disc() method of the Irradiance module
-            dir_nor = Irradiance.disc(glob_instant,zenith,day_of_year)
+            dir_nor = Irradiance.disc(glob_instant, zenith, day_of_year)
             # the value of direct normal irradiance is saved in the dir_nor table under the key 'dni'
             direct_instant = dir_nor['dni']
             direct_instant = "{0:.2f}".format(float(direct_instant)) #formatting the float number
