@@ -1,17 +1,15 @@
 from PyQt5.QtWidgets import *
-import PyQt5.QtGui as QtGui
 import PyQt5.QtCore as QtCore
 from PyQt5 import uic
-import sys, traceback, os
+import sys, traceback
 import Settings
-import Preparator
 import StationSearcher
 import DataReader
 import DataConverter
 import DataOutputer
 import Reporter
 from PyQt5.QtWebChannel import QWebChannel
-from PyQt5.QtWidgets import QApplication, QWidget, QStyleFactory, QStyle
+from PyQt5.QtWidgets import QApplication, QWidget, QStyleFactory
 from PyQt5.QtCore import QUrl, pyqtSlot, QFileInfo
 from PyQt5.QtWebEngineWidgets import QWebEngineView
 from PyQt5.QtGui import QFont
@@ -268,13 +266,13 @@ class GoogleMapsDialog(QDialog, google_maps_dialog):
         self.country = country
         self.elevation = format(elevation,'.2f')
 
+
 class ConversionProcess(QtCore.QThread):
 
     def __init__(self,parent=None):
         super().__init__(parent=parent)
 
     def run(self):
-        # Preparator.Preparator()
 
         StationSearcher.StationSearcher()
 
