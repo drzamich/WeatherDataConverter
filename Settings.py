@@ -106,6 +106,11 @@ regionname = 'Saxony'
 country = 'DE'
 elevation = '113'
 
+"""
+Style of font used in GUI
+"""
+font_style = 'MS Schell DLG 2'
+font_size = 8
 
 def load_settings():
     """

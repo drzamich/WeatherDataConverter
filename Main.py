@@ -1,7 +1,8 @@
-import Preparator
-from gui import MainWindow
-import sys
 from PyQt5.QtWidgets import QApplication
+import sys
+
+from gui import MainWindow
+import Preparator
 
 
 def start_application():

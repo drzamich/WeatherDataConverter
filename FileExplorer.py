@@ -11,7 +11,7 @@ class FileExplorer:
     This class contains functions are are helpful for other classes in managing files and directories
     """
 
-    def get_directory_listing(self,char_name,*extensions):
+    def get_directory_listing(self, char_name, *extensions):
         """
         :param char_name: name of the climate element
         :param extensions: unsorted list of extensions that the user wants to include on the file lsit
@@ -41,8 +41,8 @@ class FileExplorer:
             for line in ls:
                 # Directory listing from ftp server contains many information separated with ";"
                 # Therefore splitting lines is necessary
-                line_splitted = line.split(';')
-                for item in line_splitted:
+                line_split = line.split(';')
+                for item in line_split:
                     for ext in extensions:
                         if ext in item:
                             files_list.append(item.strip())
@@ -61,7 +61,7 @@ class FileExplorer:
         zf = zipfile.ZipFile(zip_filepath)
 
         # looking for txt file which name starts with file_prefix
-        inside_zip = zf.namelist()
+        inside_zip = zf.namelist()  # list of the names inside zip file
         for item in inside_zip:
             if str(item).startswith(file_prefix):
                 file_data_name = str(item)
@@ -79,7 +79,7 @@ class FileExplorer:
         :return: function downloads a file from FTP server and saves it in the data/download folder
         """
         dirpath_downloaded = Settings.dirpath_downloaded
-        path_downloaded = dirpath_downloaded+filename  # path to the downloaded file
+        path_downloaded = dirpath_downloaded + filename  # path to the downloaded file
 
         # Downloading the file only if the file wasn't downloaded before
         if not Path(path_downloaded).is_file():
@@ -93,7 +93,7 @@ class FileExplorer:
                 print('Unable to connect to FTP server')
 
             try:
-                file = open(path_downloaded,'wb')
+                file = open(path_downloaded, 'wb')
                 ftp.retrbinary('RETR %s' % filename, file.write)
                 file.close
             except Exception:
@@ -106,7 +106,7 @@ class FileExplorer:
         :param filepath: path to the txt file
         :return: contents of the txt file as a list
         """
-        file = open(filepath,'r')
+        file = open(filepath, 'r')
         file_list = file.readlines()
         file.close()
         return file_list

@@ -11,12 +11,12 @@ import Settings
 
 class StationSearcher(FileExplorer.FileExplorer):
     """
-    This class is reponsible, given the year and coordinates (longitude and latitude), to provide a list of
+    This class is responsible, given the year and coordinates (longitude and latitude), to provide a list of
     stations for which it is most favourable to extract weather data for.
     """
 
     def __init__(self):
-        Reporter.setStatus('Searching for stations',1)
+        Reporter.set_status('Searching for stations', 1)
 
         self.year = Settings.year
         self.latitude = Settings.lat
@@ -32,7 +32,7 @@ class StationSearcher(FileExplorer.FileExplorer):
 
         # If after creating station list, it is not complete, error is raised to the user
         if not Reporter.complete_station_list:
-            Reporter.setStatus('ERROR: Not possible to find stations for given input parameters.',0)
+            Reporter.set_status('ERROR: Not possible to find stations for given input parameters.', 0)
 
         Reporter.station_list = self.station_list
 
@@ -57,7 +57,7 @@ class StationSearcher(FileExplorer.FileExplorer):
 
             # Downloading characteristics file if necessary
             if not Settings.use_offline_data:
-                self.download_file(char_name,char_file_name)
+                self.download_file(char_name, char_file_name)
                 filepath = self.generate_dirpath(type='download') + char_file_name
 
             # Saving characteristic file to a list
@@ -69,10 +69,10 @@ class StationSearcher(FileExplorer.FileExplorer):
             # Combining the list of the stations from the characteristic file with the .zip files list
             # in the process stations for which there are no .zip files with weather data available are removed from
             # the list
-            combined_list = self.combine_zips_and_characteristics(char_file,zip_list)
+            combined_list = self.combine_zips_and_characteristics(char_file, zip_list)
 
             # Removing from the list stations that are on the forbidden list
-            cleared_list = self.remove_forbidden(combined_list,char_name)
+            cleared_list = self.remove_forbidden(combined_list, char_name)
 
             # Choosing station from the list that is closest to the given location
             best_station, best_station_exists = self.choose_best_station(cleared_list)
@@ -83,8 +83,8 @@ class StationSearcher(FileExplorer.FileExplorer):
                 Reporter.complete_station_list = False
 
             # In the first and second column of the list with best stations, inserting information about climate element
-            best_station.insert(0,char_name)
-            best_station.insert(1,char_short)
+            best_station.insert(0, char_name)
+            best_station.insert(1, char_short)
 
             # Adding station information to the final stations list
             self.station_list.append(best_station)
@@ -102,7 +102,7 @@ class StationSearcher(FileExplorer.FileExplorer):
             # Some stations however have empty spaces in their names (for names that are longer than one word)
             # The following code deals with that problem
             if len(split_line) > 8:  # if the line has more than 8 elements, that means the name of city is longer than
-                                # one word
+                # one word
                 override = len(split_line) - 8
                 bundesland = split_line[len(split_line) - 1]
 
@@ -129,7 +129,7 @@ class StationSearcher(FileExplorer.FileExplorer):
     def combine_zips_and_characteristics(self, char_file, zip_files):
         """
         Function responsible for checking if the station from the stations list has a corresponding zip file
-        with weather data. It also inserts the dates marking beggining and end of station operation coded in the
+        with weather data. It also inserts the dates marking beginning and end of station operation coded in the
         zip filename
         :param char_file: stations list for appropriate climate element
         :param zip_files: list of .zip files for an appropriate element
@@ -143,9 +143,9 @@ class StationSearcher(FileExplorer.FileExplorer):
 
             # Checking looking for station with same ID on the stations list
             for station in char_file:
-                if id == station[0]:   # if the IDs are the same, saving the station to the final list
+                if id == station[0]:  # if the IDs are the same, saving the station to the final list
                     # Inserting dates from the zip filename to the station list
-                    # Case for solar data is excluded as those files don't have dates hidden in zip filenames
+                    # Case for solar data is excluded as those files don't have dates hidden in zip file names
                     if str(split[3]) != 'row.zip':
                         station[1] = split[3]
                         station[2] = split[4]
@@ -157,16 +157,16 @@ class StationSearcher(FileExplorer.FileExplorer):
 
     def choose_best_station(self, station_list):
         """
-        Function repsponsible for, based on the year and coordinates, choosing the most favourable station from the
+        Function responsible for, based on the year and coordinates, choosing the most favourable station from the
         stations list. Based on the Haversine formula it calculates the distance from the given location to every
-        station and then chooses the staion with minimum distance if there exists weather data for this station in the
+        station and then chooses the station with minimum distance if there exists weather data for this station in the
         given year.
 
         :param station_list: stations list
         :return: characteristics of the most favourable station saved in a list
         """
         startdate = int(str(self.year) + '0101')
-        enddate = int(str(self.year)+'1231')
+        enddate = int(str(self.year) + '1231')
         distancemax = sys.maxsize
         beststation = []
         best_station_exists = False
@@ -175,7 +175,7 @@ class StationSearcher(FileExplorer.FileExplorer):
             # Checking if the given year is within the operation range of the station
             if int(station[1]) <= startdate and int(station[2]) >= enddate:
                 # Calculating the distance from the station to the given coordinates
-                distance = self.gpsdistance(self.latitude,self.longitude,float(station[4]),float(station[5]))
+                distance = self.gpsdistance(self.latitude, self.longitude, float(station[4]), float(station[5]))
                 if distance < distancemax:
                     beststation = station
                     distancemax = distance
@@ -211,12 +211,12 @@ class StationSearcher(FileExplorer.FileExplorer):
         """
         Function loads list of forbidden stations saved as a seralized object
         """
-        path = Settings.dirpath_program + os.sep + 'programdata'+os.sep+'forbidden_stations.pickle'
+        path = Settings.dirpath_program + os.sep + 'programdata' + os.sep + 'forbidden_stations.pickle'
 
         if not Path(path).is_file():  # There is no forbidden list yet
             self.forbidden_list = []
         else:
-            pickle_in = open(path,'rb')
+            pickle_in = open(path, 'rb')
             self.forbidden_list = pickle.load(pickle_in)
             pickle_in.close()
 
@@ -243,7 +243,3 @@ class StationSearcher(FileExplorer.FileExplorer):
                 cleared_list.append(station)
 
         return cleared_list
-
-
-
-

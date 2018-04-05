@@ -17,7 +17,7 @@ class DataReader(FileExplorer.FileExplorer):
 
     def __init__(self):
         print('DataReader')
-        Reporter.setStatus('Reading data',11)
+        Reporter.set_status('Reading data', 11)
         self.year = Settings.year
         self.station_list = Reporter.station_list
         self.corrupted_data = True
@@ -32,7 +32,7 @@ class DataReader(FileExplorer.FileExplorer):
 
         Reporter.extracted_data = self.extracted_data
 
-        Reporter.setStatus('Data read', 20)
+        Reporter.set_status('Data read', 20)
 
     def generate_raw_set(self):
         """
@@ -53,7 +53,7 @@ class DataReader(FileExplorer.FileExplorer):
                 # After adding station to the forbidden list, a new station list is created
                 searcher = StationSearcher.StationSearcher()
                 self.station_list = searcher.station_list
-                Reporter.setStatus('Reading data', 11)
+                Reporter.set_status('Reading data', 11)
 
                 return  # Jump back to the calling function to repeat the process from the start
 
@@ -73,28 +73,28 @@ class DataReader(FileExplorer.FileExplorer):
         enddate = station[4]
 
         # Based on the station details, generating name of the .zip file with weather data
-        filename = 'stundenwerte_'+char_short.upper()+'_'+id+'_'+startdate+'_'+enddate+'_hist.zip'
+        filename = 'stundenwerte_' + char_short.upper() + '_' + id + '_' + startdate + '_' + enddate + '_hist.zip'
 
         # Solar data has different naming convention, hence the exception
         if char_name == 'solar':
             filename = 'stundenwerte_' + char_short.upper() + '_' + id + '_row.zip'
 
         # Generating path to the file
-        path = self.generate_dirpath(char_name)+filename
+        path = self.generate_dirpath(char_name) + filename
 
-        # If no offline data is used, downloading the zip fiile
+        # If no offline data is used, downloading the zip file
         if not Settings.use_offline_data:
-            self.download_file(char_name,filename)
-            path = self.generate_dirpath(type='download')+filename
+            self.download_file(char_name, filename)
+            path = self.generate_dirpath(type='download') + filename
 
         # Getting contents of the produkt*.txt file inside the zip file
         if not Settings.testing_mode:
-            return self.get_txt_from_zip(path,file_prefix='produkt')
+            return self.get_txt_from_zip(path, file_prefix='produkt')
         else:
             # If the testing_mode is on, getting the data from files in the testing/directory
-            return self.get_txt_as_list('data/testing/'+char_name+'.txt')
+            return self.get_txt_as_list('data' + os.sep + 'testing' + os.sep + char_name + '.txt')
 
-    def strip_other_years(self,year,data_list):
+    def strip_other_years(self, year, data_list):
         """
         :param year: the year for which the weather data has to be extracted
         :param data_list: raw data list
@@ -105,7 +105,7 @@ class DataReader(FileExplorer.FileExplorer):
             # splitting each line of the file where the semicolon is. also decoding the file from bytes to utf8 format
             # for some reason it is only necessary when the text file is loaded from the zip file
             if not Settings.testing_mode:  # in the testing mode I use pure txt files (not packed in zip) -
-                                           # no decoding needed
+                # no decoding needed
                 line_split = line.decode('utf8').split(";")
             else:
                 line_split = line.split(";")
@@ -117,13 +117,13 @@ class DataReader(FileExplorer.FileExplorer):
                 for part in line_split:
                     newline.append(part)
                 newline[1] = date[0:10]  # YYYYmmddHH - only saving the first 10 digits of the date - sometimes the time
-                                         # stamp also contains minutes, that are not necessary
+                # stamp also contains minutes, that are not necessary
 
                 new_list.append(newline)
 
         return new_list
 
-    def delete_columns(self,data_list,char_index):
+    def delete_columns(self, data_list, char_index):
         """
         :param data_list: raw data list
         :param char_index: index (position number in the observedCharacteristics variable) of the climate element
@@ -149,19 +149,17 @@ class DataReader(FileExplorer.FileExplorer):
         provide data for a certain climate element. Station with insufficient data is added to the forbidden list
         to avoid using it in the future for the specific year and climate element
         """
-        forbidden_item = [year,char_name,station_id]
-        path = 'programdata'+os.sep+'forbidden_stations.pickle'
+        forbidden_item = [year, char_name, station_id]
+        path = 'programdata' + os.sep + 'forbidden_stations.pickle'
 
-        if not Path(path).is_file():
-            forbidden_list = [forbidden_item]  # There is no forbidden list yet
+        if not Path(path).is_file():  # There is no forbidden list yet
+            forbidden_list = [forbidden_item]
         else:
-            pickle_in = open(path,'rb')
+            pickle_in = open(path, 'rb')
             forbidden_list = pickle.load(pickle_in)
             forbidden_list.append(forbidden_item)
             pickle_in.close()
 
-        pickle_out = open(path,'wb')
+        pickle_out = open(path, 'wb')
         pickle.dump(forbidden_list, pickle_out)
         pickle_out.close()
-
-
