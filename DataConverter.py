@@ -113,9 +113,9 @@ class DataConverter:
         :return: data set with continous entries (there exist an entry for each hour of the year)
         """
         fmt = Settings.fmt
-        for char_index,data_list in enumerate(self.converted_data):
-            missing_list_entry = []  # list for storing missing entries' time periods
-            missing_entries = 0  # variable for storing number of missing entries
+        for char_index, data_list in enumerate(self.converted_data):
+            # missing_list_entry = []  # list for storing missing entries' time periods
+            # missing_entries = 0  # variable for storing number of missing entries
             size = len(data_list[0])  # number of columns in the data set
 
             for index, entry in enumerate(data_list):
@@ -125,18 +125,22 @@ class DataConverter:
                     # If the date does not end with specific string, it means that the first entry has different date
                     if not data_list[0][0].endswith('010100'):
                         # Adding 1 to the missing entries number
-                        missing_entries += 1
+                        # missing_entries += 1
                         new_entry = [-999] * size  # new entry has all values in all columns except first (the one that
                         # stores the date set to -999 (marked as missing)
 
                         # Saving in the list with missing time ranges information about the time range
-                        missing_list_entry.append('before:')
-                        missing_list_entry.append(data_list[0][0])
+                        # missing_list_entry.append('before:')
+                        # missing_list_entry.append(data_list[0][0])
 
                         # Inserting the date of 1th Jan of given year to the new entry in the 1st column
                         year = data_list[0][0][0:4]
                         new_date = year + '010100'
                         new_entry[0] = new_date
+
+                        if char_index == 6 and new_date.endswith(('21', '22', '23', '00', '01', '02')):
+                            new_entry = [new_date, 0.00]
+
                         # Inserting the new entry to the original list
                         data_list.insert(0, new_entry)
 
@@ -155,8 +159,13 @@ class DataConverter:
                     # If the time diff between dates is bigger than 1 hour, that means there is a missing value
                     if td_hours > 1.0:
                         # adding number of missing entries to the reporting variables
-                        missing_entries += td_hours
-                        missing_list_entry.append([date1, date2])
+
+                        # Special case for cloudiness data for which entries between 21 and 2
+                        # o'clock are always missing
+
+                        # if not(char_index == 6 and date1.endswith('20') and date2.endswith('03')):
+                        #     missing_list_entry.append([date1, date2])
+                        #     missing_entries += td_hours
 
                         # for each missing entry, a new entry is created
                         for x in range(1, int(td_hours)):
@@ -167,6 +176,9 @@ class DataConverter:
                             # new entry has all values in all columns except first (the one that
                             # stores the date set to -999 (marked as missing)
                             new_entry = [-999] * size
+
+                            if char_index == 6 and date_new.endswith(('21', '22', '23', '00', '01', '02')):
+                                new_entry = [0.00] * size
 
                             # Inserting new date in the first column of the new entry
                             new_entry[0] = date_new
@@ -181,8 +193,8 @@ class DataConverter:
                     # different date
                     if not str(last_date).endswith('123123'):
                         # Saving the missing entries time range to the reporting list
-                        missing_list_entry.append('after:')
-                        missing_list_entry.append(last_date)
+                        # missing_list_entry.append('after:')
+                        # missing_list_entry.append(last_date)
                         tstamp1 = datetime.datetime.strptime(last_date, fmt)
                         tstamp_new = tstamp1
                         while True:
@@ -194,22 +206,25 @@ class DataConverter:
                             new_entry = [-999] * size
                             a = 1
                             tstamp_new = tstamp_new + datetime.timedelta(hours=a)
-                            newdate = datetime.datetime.strftime(tstamp_new, fmt)
+                            new_date = datetime.datetime.strftime(tstamp_new, fmt)
+
+                            if char_index == 6 and new_date.endswith(('21', '22', '23', '00', '01', '02')):
+                                new_entry = [new_date, 0.00]
 
                             # Inserting new date in the first column of the new entry
-                            new_entry[0] = newdate
+                            new_entry[0] = new_date
 
                             # Inserting new entry in the original data set
                             data_list.insert(len(data_list) + 1, new_entry)
                             a += 1
-                            missing_entries += 1
+                            # missing_entries += 1
 
                             # Breaking the loop when reaching last hour of the year
-                            if newdate.endswith('123123'):
+                            if new_date.endswith('123123'):
                                 break
 
-            self.missing_entries_list.append(missing_entries)
-            self.missing_list.append(missing_list_entry)
+                                # self.missing_entries_list.append(missing_entries)
+                                # self.missing_list.append(missing_list_entry)
 
     def interpolate_data(self):
         """
@@ -217,6 +232,8 @@ class DataConverter:
         non-missing values (interpolate_directly()) or non-missing values in a 24h distance (interpolate_by_average())
         """
         for index, data in enumerate(self.converted_data):
+            missing_entries = 0
+            missing_dates = []
             # Saving indexes of rows with missing data
             # This is done for each column separately
             missing_values = [[]]
@@ -224,12 +241,27 @@ class DataConverter:
                 for column, item in enumerate(row):
                     # The value is perceived as missing when it's value is set to -999
                     # For cloudiness (index==1) missing observations are also marked with -1
-                    if float(item) == -999.0 or float(item) == -1.0 and index == 1:
-                        if len(missing_values) == column:
-                            missing_values.append([i])
+                    # Exception is also made for soil_temperature at 2cm depth (always missing)
+                    if (float(item) == -999.0 or \
+                            (float(item) == -1.0 and index == 1)) and \
+                            (index != 4 and column != 1):
 
+                        if index==4 and column == 1:
+                            print('chuj')
+
+
+                        if len(missing_values) == column:  # there is already sub-list for this column in the main list
+                            missing_values.append([i])
                         elif len(missing_values) > column:
                             missing_values[column].append(i)
+
+                        missing_entries += 1
+                        date = row[0]
+                        if date not in missing_dates:
+                            missing_dates.append(date)
+
+            self.missing_list.append(missing_dates)
+            self.missing_entries_list.append(missing_entries)
 
             # for air temp, rel humidity, soil temperature and solar data, interpolation is made based
             # on the values from neighbouring days
@@ -239,7 +271,7 @@ class DataConverter:
             # for cloudiness, precipitation, pressure and wind data, interpolation is made directly based on the values
             # nearest to the missing data
             elif index == 1 or index == 2 or index == 3 or index == 6 or index == 7:
-                self.interpolate_directly(data, missing_values,index)
+                self.interpolate_directly(data, missing_values, index)
 
     def interpolate_by_average(self, data, missing_values):
         """
@@ -280,7 +312,7 @@ class DataConverter:
                 else:
                     data[index][column] = (float(data[upper_index][column]) + float(data[lower_index][column])) / 2
 
-    def interpolate_directly(self, data, missing_values,char_index):
+    def interpolate_directly(self, data, missing_values, char_index):
         """
         Function inserts new values in place of missing values.
         The new is calculated as a result of direct interpolation between neighbouring non-missing values.
@@ -329,7 +361,7 @@ class DataConverter:
 
                     new_val = lower_val + incr * distance
                     new_val = format(new_val, '.1f')
-                    if char_index == 1:  #special case for cloudiness data
+                    if char_index == 1:  # special case for cloudiness data
                         new_val = int(round(float(new_val)))
                     data[index][column] = new_val
 

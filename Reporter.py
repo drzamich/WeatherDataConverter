@@ -94,7 +94,7 @@ class Reporter:
         # Writing in the report file number of missing entries in the original data set for each climate  element
         for index, station in enumerate(self.station_list):
             report_text = ('\nSuccessfully extracted data for ' + station[0] + '\n'
-                           + 'There are %i missing hour entries in the original data set \n' % self.missing_entries[
+                           + 'There are %i missing entries in the original data set \n' % self.missing_entries[
                                index])
             f.write(report_text)
         f.close()
@@ -109,7 +109,7 @@ class Reporter:
         for index, list in enumerate(self.missing_dates):
             f.write(Settings.observedCharacteristics[index][0] + '\n')
             if index == 6: # exception for sunshine duration data
-                f.write('Missing entries between 21:00 and 2:00 were omitted')
+                f.write('Missing values between 21:00 and 2:00 were omitted')
             for item in list:
                 f.write(str(item) + '\n')
             f.write('\n')
