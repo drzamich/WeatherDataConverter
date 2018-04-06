@@ -48,7 +48,7 @@ Variable controlling if the testing mode is on. If it's off, the program generat
 coordinates using stored in an appropriate place on local drive or FTP server.
 If it's on, then the program uses data from txt files stored in data/testing directory
 """
-testing_mode = 1
+testing_mode = 0
 
 """
 Variable storing information about weather climate elements, based on the design of folders, filenames and 

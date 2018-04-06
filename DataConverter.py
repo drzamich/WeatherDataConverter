@@ -112,10 +112,8 @@ class DataConverter:
         (values marked as missing: -999)
         :return: data set with continous entries (there exist an entry for each hour of the year)
         """
-        fmt = Settings.fmt
+        fmt = Settings.fmt  # date format
         for char_index, data_list in enumerate(self.converted_data):
-            # missing_list_entry = []  # list for storing missing entries' time periods
-            # missing_entries = 0  # variable for storing number of missing entries
             size = len(data_list[0])  # number of columns in the data set
 
             for index, entry in enumerate(data_list):
@@ -124,22 +122,21 @@ class DataConverter:
                     # For the first entry on the list it is checked if it's date is 01 Jan YYYY 00:00
                     # If the date does not end with specific string, it means that the first entry has different date
                     if not data_list[0][0].endswith('010100'):
-                        # Adding 1 to the missing entries number
-                        # missing_entries += 1
-                        new_entry = [-999] * size  # new entry has all values in all columns except first (the one that
-                        # stores the date set to -999 (marked as missing)
-
-                        # Saving in the list with missing time ranges information about the time range
-                        # missing_list_entry.append('before:')
-                        # missing_list_entry.append(data_list[0][0])
-
                         # Inserting the date of 1th Jan of given year to the new entry in the 1st column
                         year = data_list[0][0][0:4]
                         new_date = year + '010100'
-                        new_entry[0] = new_date
 
+                        # new entry has all values in all columns except first (the one that
+                        # stores the date set to -999 (marked as missing)
+                        new_entry = [-999] * size
+
+                        # In case for sunshine duration (sun) data, where data between 21 and 02 is always
+                        # missing, setting the value to 0.00
                         if char_index == 6 and new_date.endswith(('21', '22', '23', '00', '01', '02')):
-                            new_entry = [new_date, 0.00]
+                            new_entry = [0.00] * size
+
+                        # Inserting date in the new entry
+                        new_entry[0] = new_date
 
                         # Inserting the new entry to the original list
                         data_list.insert(0, new_entry)
@@ -158,30 +155,23 @@ class DataConverter:
 
                     # If the time diff between dates is bigger than 1 hour, that means there is a missing value
                     if td_hours > 1.0:
-                        # adding number of missing entries to the reporting variables
-
-                        # Special case for cloudiness data for which entries between 21 and 2
-                        # o'clock are always missing
-
-                        # if not(char_index == 6 and date1.endswith('20') and date2.endswith('03')):
-                        #     missing_list_entry.append([date1, date2])
-                        #     missing_entries += td_hours
-
                         # for each missing entry, a new entry is created
                         for x in range(1, int(td_hours)):
                             # calculating the new date
                             tstamp_new = tstamp1 + datetime.timedelta(hours=x)
-                            date_new = datetime.datetime.strftime(tstamp_new, fmt)
+                            new_date = datetime.datetime.strftime(tstamp_new, fmt)
 
                             # new entry has all values in all columns except first (the one that
                             # stores the date set to -999 (marked as missing)
                             new_entry = [-999] * size
 
-                            if char_index == 6 and date_new.endswith(('21', '22', '23', '00', '01', '02')):
+                            # In case for sunshine duration (sun) data, where data between 21 and 02 is always
+                            # missing, setting the value to 0.00
+                            if char_index == 6 and new_date.endswith(('21', '22', '23', '00', '01', '02')):
                                 new_entry = [0.00] * size
 
                             # Inserting new date in the first column of the new entry
-                            new_entry[0] = date_new
+                            new_entry[0] = new_date
 
                             # Inserting new entry in the original data set
                             data_list.insert((index - 1) + x, new_entry)
@@ -193,23 +183,24 @@ class DataConverter:
                     # different date
                     if not str(last_date).endswith('123123'):
                         # Saving the missing entries time range to the reporting list
-                        # missing_list_entry.append('after:')
-                        # missing_list_entry.append(last_date)
                         tstamp1 = datetime.datetime.strptime(last_date, fmt)
                         tstamp_new = tstamp1
                         while True:
                             # Adding one hour to the last date on the data list and setting it as date of the new entry
                             # As long as the new date won't be 31st Dec YYYY 23:00
 
-                            # new entry has all values in all columns except first (the one that
-                            # stores the date set to -999 (marked as missing)
-                            new_entry = [-999] * size
                             a = 1
                             tstamp_new = tstamp_new + datetime.timedelta(hours=a)
                             new_date = datetime.datetime.strftime(tstamp_new, fmt)
 
+                            # new entry has all values in all columns except first (the one that
+                            # stores the date) set to -999 (marked as missing)
+                            new_entry = [-999] * size
+
+                            # In case for sunshine duration (sun) data, where data between 21 and 02 is always
+                            # missing, setting the value to 0.00
                             if char_index == 6 and new_date.endswith(('21', '22', '23', '00', '01', '02')):
-                                new_entry = [new_date, 0.00]
+                                new_entry = [0.00] * size
 
                             # Inserting new date in the first column of the new entry
                             new_entry[0] = new_date
@@ -217,14 +208,10 @@ class DataConverter:
                             # Inserting new entry in the original data set
                             data_list.insert(len(data_list) + 1, new_entry)
                             a += 1
-                            # missing_entries += 1
 
                             # Breaking the loop when reaching last hour of the year
                             if new_date.endswith('123123'):
                                 break
-
-                                # self.missing_entries_list.append(missing_entries)
-                                # self.missing_list.append(missing_list_entry)
 
     def interpolate_data(self):
         """
@@ -242,13 +229,12 @@ class DataConverter:
                     # The value is perceived as missing when it's value is set to -999
                     # For cloudiness (index==1) missing observations are also marked with -1
                     # Exception is also made for soil_temperature at 2cm depth (always missing)
-                    if (float(item) == -999.0 or \
+                    if (float(item) == -999.0 or
                             (float(item) == -1.0 and index == 1)) and \
                             (index != 4 and column != 1):
 
-                        if index==4 and column == 1:
+                        if index == 4 and column == 1:
                             print('chuj')
-
 
                         if len(missing_values) == column:  # there is already sub-list for this column in the main list
                             missing_values.append([i])
