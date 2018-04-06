@@ -108,8 +108,10 @@ class Reporter:
 
         for index, list in enumerate(self.missing_dates):
             f.write(Settings.observedCharacteristics[index][0] + '\n')
+            if index == 5: # exception for soil_temperature data
+                f.write('Missing values for soil temperature at 2 cm depth were omitted\n')
             if index == 6: # exception for sunshine duration data
-                f.write('Missing values between 21:00 and 2:00 were omitted')
+                f.write('Missing values between 21:00 and 2:00 were omitted\n')
             for item in list:
                 f.write(str(item) + '\n')
             f.write('\n')
