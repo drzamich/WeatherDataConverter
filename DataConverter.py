@@ -233,9 +233,6 @@ class DataConverter:
                             (float(item) == -1.0 and index == 1)) and \
                             (index != 4 and column != 1):
 
-                        if index == 4 and column == 1:
-                            print('chuj')
-
                         if len(missing_values) == column:  # there is already sub-list for this column in the main list
                             missing_values.append([i])
                         elif len(missing_values) > column:
