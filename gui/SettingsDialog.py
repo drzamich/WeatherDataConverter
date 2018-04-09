@@ -33,6 +33,11 @@ class SettingsDialog(QDialog, layout):
         else:
             self.offlineData_checkBox.setCheckState(0)  # unchecked
 
+        if Settings.interpolate_data:
+            self.interpolate_data_checkBox.setCheckState(2)  # checked
+        else:
+            self.interpolate_data_checkBox.setCheckState(0)  # unchecked
+
         if Settings.tabular_reports:
             self.tabular_checkBox.setCheckState(2)  # checked
         else:
@@ -42,14 +47,14 @@ class SettingsDialog(QDialog, layout):
         # Opens dialog window allowing user to choose location of the offline weather data
         self.offline_data_directory = QFileDialog.getExistingDirectoryUrl(self, caption='Choose folder',
                                                                           options=QFileDialog.ShowDirsOnly).toString()
-        self.offline_data_directory = self.offline_data_directory[8:] + os.sep
+        self.offline_data_directory = self.offline_data_directory[8:] #+ os.sep
         self.offlineDataField.setText(self.offline_data_directory)
 
     def outputPathFieldBrowse_clicked(self):
         # Opens dialog window allowing user to choose the default output directory
         self.output_directory = QFileDialog.getExistingDirectoryUrl(self, caption='Choose folder',
                                                                     options=QFileDialog.ShowDirsOnly).toString()
-        self.output_directory = self.output_directory[8:] + os.sep
+        self.output_directory = self.output_directory[8:] #+ os.sep
         self.outputPathField.setText(self.output_directory)
 
     def accept(self):
@@ -58,7 +63,7 @@ class SettingsDialog(QDialog, layout):
         """
         # Saving the settings
         Settings.output_directory = self.output_directory
-        Settings.output_path = self.output_directory + 'Output.epw'
+        Settings.output_path = self.output_directory + '/Output.epw'
         Settings.dirpath_offline = self.offline_data_directory
 
         Settings.ftp_dirpath = self.ftpPathField.text()
@@ -70,6 +75,7 @@ class SettingsDialog(QDialog, layout):
 
         offline_data_checked = self.offlineData_checkBox.isChecked()
         tabular_reports_checked = self.tabular_checkBox.isChecked()
+        interpolate_data_checked = self.interpolate_data_checkBox.isChecked()
 
         if offline_data_checked:
             Settings.use_offline_data = True
@@ -80,6 +86,11 @@ class SettingsDialog(QDialog, layout):
             Settings.tabular_reports = True
         else:
             Settings.tabular_reports = False
+
+        if interpolate_data_checked:
+            Settings.interpolate_data = True
+        else:
+            Settings.interpolate_data = False
 
         Settings.save_settings()
 

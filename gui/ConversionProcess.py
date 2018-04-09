@@ -16,6 +16,7 @@ class ConversionProcess(QtCore.QThread):
         super().__init__(parent=parent)
 
     def run(self):
+        Reporter.set_status('Start of the process',1)
         # Create list of 7 stations that are most favorable to extract weather data from for
         # the given input parameters
         StationSearcher.StationSearcher()
@@ -57,9 +58,9 @@ class StatusUpdater(QtCore.QThread):
     def run(self):
         while True:
             self.send_status(Reporter.stage_name, Reporter.stage_percent)
-            if Reporter.stage_name == 'Process completed':
-                self.send_status(Reporter.stage_name, Reporter.stage_percent)
-                break
+            # if Reporter.stage_name == 'Process completed':
+            #     self.send_status(Reporter.stage_name, Reporter.stage_percent)
+            #     break
 
     def send_status(self, status, percent):
         # Send signals with current stage to the main window

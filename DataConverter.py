@@ -48,7 +48,10 @@ class DataConverter:
         Reporter.extracted_data = copy.deepcopy(self.converted_data)
 
         print('-Interpolate data')
-        Reporter.set_status('Converting data... interpolation', 30)
+        if Settings.interpolate_data:
+            Reporter.set_status('Converting data... searching missing values and data interpolation', 30)
+        else:
+            Reporter.set_status('Converting data... searching missing values', 30)
         self.interpolate_data()
 
         # Removing extra entries for leap year (continous set, no gaps!)
@@ -229,12 +232,7 @@ class DataConverter:
                     # The value is perceived as missing when it's value is set to -999
                     # For cloudiness (index==1) missing observations are also marked with -1
                     # Exception is also made for soil_temperature at 2cm depth (always missing)
-                    if (float(item) == -999.0 or
-                            (float(item) == -1.0 and index == 1)) and \
-                            (index != 4 and column != 1):
-
-                        if index == 4 and column == 1:
-                            print('chuj')
+                    if float(item) == -999 and not (index == 4 and column == 1) or (float(item) == -1.0 and index == 1):
 
                         if len(missing_values) == column:  # there is already sub-list for this column in the main list
                             missing_values.append([i])
@@ -249,15 +247,16 @@ class DataConverter:
             self.missing_list.append(missing_dates)
             self.missing_entries_list.append(missing_entries)
 
-            # for air temp, rel humidity, soil temperature and solar data, interpolation is made based
-            # on the values from neighbouring days
-            if index == 0 or index == 4 or index == 5:
-                self.interpolate_by_average(data, missing_values)
+            if Settings.interpolate_data:
+                # for air temp, rel humidity, soil temperature and solar data, interpolation is made based
+                # on the values from neighbouring days
+                if index == 0 or index == 4 or index == 5:
+                    self.interpolate_by_average(data, missing_values)
 
-            # for cloudiness, precipitation, pressure and wind data, interpolation is made directly based on the values
-            # nearest to the missing data
-            elif index == 1 or index == 2 or index == 3 or index == 6 or index == 7:
-                self.interpolate_directly(data, missing_values, index)
+                # for cloudiness, precipitation, pressure and wind data, interpolation is directly based on the values
+                # nearest to the missing data
+                elif index == 1 or index == 2 or index == 3 or index == 6 or index == 7:
+                    self.interpolate_directly(data, missing_values, index)
 
     def interpolate_by_average(self, data, missing_values):
         """
