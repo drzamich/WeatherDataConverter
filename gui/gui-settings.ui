@@ -328,13 +328,26 @@
      <property name="geometry">
       <rect>
        <x>20</x>
-       <y>90</y>
+       <y>100</y>
        <width>201</width>
        <height>17</height>
       </rect>
      </property>
      <property name="text">
       <string>Save reports in tabular form</string>
+     </property>
+    </widget>
+    <widget class="QCheckBox" name="interpolate_data_checkBox">
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>70</y>
+       <width>141</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Interpolate missing data</string>
      </property>
     </widget>
    </widget>

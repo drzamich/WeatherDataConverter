@@ -84,9 +84,14 @@ fmt = '%Y%m%d%H'
 Minimum number of data records in the given year (maximum 24*366 = 8784) for which the
 data set is perceived as valid. If the station provides us with the data set with lower number of records
 for the given year, it's perceived as invalid and added to the "forbidden" list.
-
 """
 min_rec = 3000
+
+""""
+Variable defines if the missing data will be interpolated basing on the available data.
+If not, values will be marked as missing
+"""
+interpolate_data = True
 
 """
 Variable defines whether or not output values in reports/converted_data and reports/raw_data
@@ -126,7 +131,7 @@ def load_settings():
 
 def save_settings():
     """
-    Function that saves settings for use in the following runs of the program.
+    Function that saves settings for use in the following runs of the program in the serialization file.
     """
     global year, lon, lat
     global use_offline_data, dirpath_offline
@@ -140,7 +145,8 @@ def save_settings():
                 'dirpath_offline': dirpath_offline, 'ftp_dirpath':ftp_dirpath, 'ftp_adress':ftp_adress,
                 'ftp_user':ftp_user, 'ftp_pass': ftp_pass, 'output_directory': output_directory,
                 'output_path': output_path, 'cityname': cityname, 'regionname': regionname, 'elevation': elevation,
-                'country': country, 'min_rec': min_rec, 'tabular_reports': tabular_reports}
+                'country': country, 'min_rec': min_rec, 'tabular_reports': tabular_reports,
+                'interpolate_data': interpolate_data}
 
     try:
         pickle.dump(settings,open('programdata'+os.sep+'settings.pickle','wb'))

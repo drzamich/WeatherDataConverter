@@ -83,6 +83,7 @@ class MainWindow(QMainWindow, layout):
         self.outputField.setText(Settings.output_path)
 
     def startConversionButton_clicked(self):
+
         Settings.output_path = self.outputField.text()
 
         year = self.yearField.text()

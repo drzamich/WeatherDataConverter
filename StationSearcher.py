@@ -207,9 +207,9 @@ class StationSearcher(FileExplorer.FileExplorer):
 
         return R * c
 
-    def load_forbidden_list(self):
+    def load_forbidden_list1(self):
         """
-        Function loads list of forbidden stations saved as a seralized object
+        Function loads list of forbidden stations saved as a serialized object
         """
         path = Settings.dirpath_program + os.sep + 'programdata' + os.sep + 'forbidden_stations.pickle'
 
@@ -219,6 +219,26 @@ class StationSearcher(FileExplorer.FileExplorer):
             pickle_in = open(path, 'rb')
             self.forbidden_list = pickle.load(pickle_in)
             pickle_in.close()
+
+    def load_forbidden_list(self):
+        self.forbidden_list = []
+        path = Settings.dirpath_program + os.sep + 'programdata' + os.sep + 'forbidden_stations.txt'
+
+        try:
+            file_list = self.get_txt_as_list(path)
+        except FileNotFoundError:
+            return
+
+        for line in file_list:
+            line_split = line.split('\t')
+
+            year = line_split[0]
+            station_id = line_split[1]
+            char_name = line_split[2].rstrip()
+            item = [year, station_id, char_name]
+
+            self.forbidden_list.append(item)
+
 
     def remove_forbidden(self, station_list, char_name):
         """
@@ -233,10 +253,12 @@ class StationSearcher(FileExplorer.FileExplorer):
             station_id = station[0]
             forbidden = False
             for forbidden_station in self.forbidden_list:
-                forbidden_id = forbidden_station[2]
                 forbidden_year = forbidden_station[0]
-                forbidden_char_name = forbidden_station[1]
-                if forbidden_year == self.year and forbidden_id == station_id and forbidden_char_name == char_name:
+                forbidden_id = forbidden_station[1]
+                forbidden_char_name = forbidden_station[2]
+                if (forbidden_year == str(self.year) or forbidden_year == 'all') \
+                        and forbidden_id == station_id \
+                        and (forbidden_char_name == char_name or forbidden_char_name == 'all'):
                     forbidden = True
                     break
             if not forbidden:

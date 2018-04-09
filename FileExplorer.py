@@ -125,15 +125,15 @@ class FileExplorer:
 
         if type == 'repository':
             if Settings.use_offline_data:
-                dirpath = dirpath_local
+                dirpath = dirpath_local + os.sep
             else:
                 dirpath = dirpath_ftp
 
             # Exception for solar data
             if char_name != 'solar':
-                path = dirpath + char_name + os.sep + 'historical' + os.sep
+                path = dirpath + char_name + '/historical/'
             else:
-                path = dirpath + char_name + os.sep
+                path = dirpath + char_name + '/'
 
         elif type == 'download':
             path = dirpath_downloaded
