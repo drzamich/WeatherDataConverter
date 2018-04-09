@@ -207,19 +207,6 @@ class StationSearcher(FileExplorer.FileExplorer):
 
         return R * c
 
-    def load_forbidden_list1(self):
-        """
-        Function loads list of forbidden stations saved as a serialized object
-        """
-        path = Settings.dirpath_program + os.sep + 'programdata' + os.sep + 'forbidden_stations.pickle'
-
-        if not Path(path).is_file():  # There is no forbidden list yet
-            self.forbidden_list = []
-        else:
-            pickle_in = open(path, 'rb')
-            self.forbidden_list = pickle.load(pickle_in)
-            pickle_in.close()
-
     def load_forbidden_list(self):
         self.forbidden_list = []
         path = Settings.dirpath_program + os.sep + 'programdata' + os.sep + 'forbidden_stations.txt'

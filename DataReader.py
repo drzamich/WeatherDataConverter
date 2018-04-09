@@ -143,27 +143,6 @@ class DataReader(FileExplorer.FileExplorer):
 
         return new_list
 
-    def forbid_station2(self, year, char_name, station_id):
-        """
-        When the number of records for a given year is not sufficient, another station has to be chosen to
-        provide data for a certain climate element. Station with insufficient data is added to the forbidden list
-        to avoid using it in the future for the specific year and climate element
-        """
-        forbidden_item = [year, char_name, station_id]
-        path = 'programdata' + os.sep + 'forbidden_stations.pickle'
-
-        if not Path(path).is_file():  # There is no forbidden list yet
-            forbidden_list = [forbidden_item]
-        else:
-            pickle_in = open(path, 'rb')
-            forbidden_list = pickle.load(pickle_in)
-            forbidden_list.append(forbidden_item)
-            pickle_in.close()
-
-        pickle_out = open(path, 'wb')
-        pickle.dump(forbidden_list, pickle_out)
-        pickle_out.close()
-
     @staticmethod
     def forbid_station(year, char_name, station_id):
         path = Settings.dirpath_program + os.sep + 'programdata' + os.sep + 'forbidden_stations.txt'

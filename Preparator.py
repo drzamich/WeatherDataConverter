@@ -36,5 +36,5 @@ class Preparator:
 
         if not Path(path).is_file():  # There is no forbidden list yet
             f = open(path,'w')
-            f.write('year' + '\t' + 'station ID' + '\t' + 'climate element name' + '\n')  # Header
+            f.write('year (or \'all\')' + '\t' + 'station ID' + '\t' + 'climate element name (or \'all\')' + '\n')  # Header
             f.close()
