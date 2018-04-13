@@ -3,7 +3,7 @@ import copy
 import datetime
 import math
 
-from external import Irradiance
+from pvlib import irradiance
 import Reporter
 import Settings
 
@@ -479,7 +479,7 @@ class DataConverter:
             zenith = float(item[5])
 
             # Calculating the direct normal irradiance using the disc() method of the Irradiance module
-            dir_nor = Irradiance.disc(glob_instant, zenith, day_of_year)
+            dir_nor = irradiance.disc(glob_instant, zenith, day_of_year)
             # the value of direct normal irradiance is saved in the dir_nor table under the key 'dni'
             direct_instant = dir_nor['dni']
             direct_instant = "{0:.2f}".format(float(direct_instant))  # formatting the float number

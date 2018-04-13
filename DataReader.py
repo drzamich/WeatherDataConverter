@@ -1,6 +1,4 @@
 import os
-from pathlib import Path
-import pickle
 
 import FileExplorer
 import Reporter
@@ -53,7 +51,7 @@ class DataReader(FileExplorer.FileExplorer):
                 # After adding station to the forbidden list, a new station list is created
                 searcher = StationSearcher.StationSearcher()
                 self.station_list = searcher.station_list
-                Reporter.set_status('Reading data', 11)
+                Reporter.set_status('Reading data',  11)
 
                 return  # Jump back to the calling function to repeat the process from the start
 
