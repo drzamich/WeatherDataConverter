@@ -17,6 +17,7 @@ class Reporter:
     Class responsible for generating report txt files that allow user to check the correctness of extracted
     weather data.
     """
+
     def __init__(self):
         print('Reporter')
         set_status('Preparing reports', 90)
@@ -72,12 +73,19 @@ class Reporter:
         """
         Function generates report txt file with stations list and number of missing values per climate element
         """
-        # Using the imported PrettyTable class, creating a table to present the list of stations choosen for the
+        # Using the imported PrettyTable class, creating a table to present the list of stations chosen for the
         # data extraction
         table = PrettyTable(
-            ['Char', 'Short', 'ID', 'DateStart', 'DateEnd', 'Elev.', 'Lat.', 'Lon.', 'City', 'Bundesland'])
+            ['ClimateElement', 'ID', 'DateStart', 'DateEnd', 'Lat.', 'Lon.', 'StationName'])
         for station in self.station_list:
-            table.add_row(station)
+            char_name = station[0]
+            station_id = station[2]
+            date_start = station[3]
+            date_end = station[4]
+            lat = station[6]
+            lon = station[7]
+            station_name = station[8]
+            table.add_row([char_name, station_id, date_start, date_end, lat, lon, station_name])
 
         # Creating report text to be written at the beginning of the report file
         report_text = ('Data extraction executed at %s \n' % str(datetime.datetime.now())
@@ -108,9 +116,9 @@ class Reporter:
 
         for index, list in enumerate(self.missing_dates):
             f.write(Settings.observedCharacteristics[index][0] + '\n')
-            if index == 5: # exception for soil_temperature data
+            if index == 5:  # exception for soil_temperature data
                 f.write('Missing values for soil temperature at 2 cm depth were omitted\n')
-            if index == 6: # exception for sunshine duration data
+            if index == 6:  # exception for sunshine duration data
                 f.write('Missing values between 21:00 and 2:00 were omitted\n')
             for item in list:
                 f.write(str(item) + '\n')
@@ -187,6 +195,7 @@ class Reporter:
             f = open(filepath, 'a')
             f.write(str(table))
             f.close()
+
 
 """
 Variables storing information about current stage of the conversion process
