@@ -16,4 +16,9 @@ Following libraries:
 * pvlib
 * PrettyTable
 
+### Instalation
+
+To get the full functionality of the program, it's necessary to enter your own Google Maps API key in the source code.
+
+To do this, open the 'gui/map.html' file and in the line number 13, change the string '<YOUR API HERE>' with your own API key.
 
